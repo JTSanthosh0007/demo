@@ -21,7 +21,7 @@ export default function KotakPage() {
     const formData = new FormData();
     formData.append('file', file);
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
       console.log('Making POST request to /api/analyze-kotak-statement.');
       const response = await fetch(`${backendUrl}/analyze-kotak-statement`, {
         method: 'POST',

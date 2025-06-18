@@ -1955,7 +1955,7 @@ export default function StatementAnalysis({
       formData.append('platform', 'phonepe');
 
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
         console.log('Making POST request to /api/analyze-statement.');
         const response = await fetch(`${backendUrl}/analyze`, {
           method: 'POST',

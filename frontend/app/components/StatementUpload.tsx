@@ -88,7 +88,7 @@ export default function StatementUpload({ onAnalysisComplete }: StatementUploadP
     formData.append('platform', selectedPlatform)
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "")
       const response = await fetch(`${backendUrl}/analyze`, {
         method: 'POST',
         body: formData,

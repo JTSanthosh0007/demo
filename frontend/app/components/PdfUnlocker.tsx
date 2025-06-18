@@ -28,7 +28,7 @@ export default function PdfUnlocker() {
     formData.append('password', password)
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "")
       const response = await fetch(`${backendUrl}/unlock-pdf`, {
         method: 'POST',
         body: formData,

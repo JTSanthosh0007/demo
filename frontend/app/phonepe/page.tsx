@@ -22,7 +22,7 @@ export default function PhonePePage() {
       formData.append('file', file);
       formData.append('platform', 'phonepe');
 
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
       console.log('Making POST request to /api/analyze-statement.');
       const response = await fetch(`${backendUrl}/analyze`, {
         method: 'POST',

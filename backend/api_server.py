@@ -9,6 +9,7 @@ import io
 import os
 import tempfile
 import uuid
+import shutil
 
 app = FastAPI()
 
@@ -42,48 +43,43 @@ async def analyze_statement(
     file: UploadFile = File(...),
     platform: str = Form(...)
 ):
+    # Create a temporary file path
+    temp_path = f"temp_{file.filename}"
     try:
-        if not file:
-            raise HTTPException(status_code=400, detail="No file provided")
+        # Save uploaded file to the temporary path
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
 
-        # Read the file content
-        content = await file.read()
-        
-        # Create a proper file-like object
-        file_obj = FileObject(file.filename, content)
-        
-        try:
-            # Parse the statement
-            parser = StatementParser(file_obj)
-            df = parser.parse()
-            
-            # Convert to dictionary format
-            transactions = df.to_dict('records')
-            
-            # Calculate summary statistics
-            total_spent = sum(t['amount'] for t in transactions if t['amount'] < 0)
-            total_received = sum(t['amount'] for t in transactions if t['amount'] > 0)
-            
-            # Calculate category breakdown
-            category_breakdown = {}
-            for t in transactions:
-                if t['amount'] < 0:  # Only consider spending
-                    category = t['category']
-                    category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
-            
-            return {
-                "transactions": transactions,
-                "totalSpent": total_spent,
-                "totalReceived": total_received,
-                "categoryBreakdown": category_breakdown
-            }
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
-            
+        # Parse the statement using the file path
+        parser = StatementParser(temp_path)
+        df = parser.parse()
+
+        # Convert to dictionary format
+        transactions = df.to_dict('records')
+
+        # Calculate summary statistics
+        total_spent = sum(t['amount'] for t in transactions if t['amount'] < 0)
+        total_received = sum(t['amount'] for t in transactions if t['amount'] > 0)
+
+        # Calculate category breakdown
+        category_breakdown = {}
+        for t in transactions:
+            if t['amount'] < 0:  # Only consider spending
+                category = t['category']
+                category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
+
+        return {
+            "transactions": transactions,
+            "totalSpent": total_spent,
+            "totalReceived": total_received,
+            "categoryBreakdown": category_breakdown
+        }
     except Exception as e:
-        if isinstance(e, HTTPException):
-            raise e
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+    finally:
+        # Clean up the temporary file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @app.post("/analyze-kotak-statement")
 async def analyze_kotak_statement(file: UploadFile = File(...)):

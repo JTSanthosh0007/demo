@@ -82,13 +82,31 @@ async def analyze_statement(
             if t.get('amount') and t['amount'] < 0:  # Only consider spending
                 category = t.get('category', 'Uncategorized')
                 category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
+        
+        # Prepare chart data for the frontend
+        chart_labels = list(category_breakdown.keys())
+        chart_values = list(category_breakdown.values())
+
+        chart_data = {
+            "labels": chart_labels,
+            "datasets": [{
+                "label": "Spending by Category",
+                "data": chart_values,
+                "backgroundColor": [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+                ],
+                "borderWidth": 1
+            }]
+        }
 
         return {
             "transactions": transactions,
             "totalSpent": total_spent,
             "totalReceived": total_received,
             "categoryBreakdown": category_breakdown,
-            "pageCount": 0  # Frontend expects this key
+            "pageCount": 0,  # Frontend expects this key
+            "chartData": chart_data # Add chart data to the response
         }
     except Exception as e:
         import traceback

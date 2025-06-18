@@ -10,8 +10,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class KotakParser:
-    def __init__(self, file_obj):
-        self.file_obj = file_obj
+    def __init__(self, file, filename):
+        self.file_obj = file
         
     def parse(self):
         """Parse Kotak bank statement PDF"""

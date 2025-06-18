@@ -9,7 +9,6 @@ import io
 import os
 import tempfile
 import uuid
-import shutil
 
 app = FastAPI()
 
@@ -43,49 +42,58 @@ async def analyze_statement(
     file: UploadFile = File(...),
     platform: str = Form(...)
 ):
-    # Create a temporary file path
-    temp_path = f"temp_{file.filename}"
     try:
-        # Save uploaded file to the temporary path
-        with open(temp_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        # Use the correct parser based on the platform
+        # Use the correct parser based on the platform, passing the file-like object directly
         if platform == 'kotak':
-            parser = KotakParser(temp_path)
+            # The parser now expects the file object and filename
+            parser = KotakParser(file.file, file.filename)
         elif platform == 'phonepe':
-            parser = StatementParser(temp_path)
+            # The parser now expects the file object and filename
+            parser = StatementParser(file.file, file.filename)
         else:
             raise HTTPException(status_code=400, detail="Unsupported platform")
 
         df = parser.parse()
 
+        # Check if DataFrame is empty or None
+        if df is None or df.empty:
+            return {
+                "transactions": [],
+                "totalSpent": 0,
+                "totalReceived": 0,
+                "categoryBreakdown": {},
+                "pageCount": 0
+            }
+
+        # Convert date column to string to avoid JSON serialization issues
+        if 'date' in df.columns:
+            df['date'] = df['date'].astype(str)
+
         # Convert to dictionary format
         transactions = df.to_dict('records')
 
         # Calculate summary statistics
-        total_spent = sum(t['amount'] for t in transactions if t['amount'] < 0)
-        total_received = sum(t['amount'] for t in transactions if t['amount'] > 0)
+        total_spent = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] < 0)
+        total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
 
         # Calculate category breakdown
         category_breakdown = {}
         for t in transactions:
-            if t['amount'] < 0:  # Only consider spending
-                category = t['category']
+            if t.get('amount') and t['amount'] < 0:  # Only consider spending
+                category = t.get('category', 'Uncategorized')
                 category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
 
         return {
             "transactions": transactions,
             "totalSpent": total_spent,
             "totalReceived": total_received,
-            "categoryBreakdown": category_breakdown
+            "categoryBreakdown": category_breakdown,
+            "pageCount": 0  # Frontend expects this key
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
-    finally:
-        # Clean up the temporary file
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
 
 @app.post("/unlock-pdf")
 async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form(...)):

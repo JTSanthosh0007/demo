@@ -15,9 +15,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class StatementParser:
-    def __init__(self, file_path):
-        self.file_path = file_path
-        self.filename = Path(file_path).name
+    def __init__(self, file, filename):
+        self.file = file
+        self.filename = filename
 
     def parse(self):
         """Parse the file into a standardized DataFrame"""
@@ -57,7 +57,7 @@ class StatementParser:
         """Primary parsing method: Extracts data from structured tables."""
         transactions = []
         try:
-            with pdfplumber.open(self.file_path) as pdf:
+            with pdfplumber.open(self.file) as pdf:
                 for i, page in enumerate(pdf.pages):
                     logger.info(f"TABLE PARSE: Processing page {i + 1}/{len(pdf.pages)}")
                     
@@ -131,7 +131,7 @@ class StatementParser:
             r"(?P<amount>-?₹?\s?[\d,]+\.\d{2})"
         )
         try:
-            with pdfplumber.open(self.file_path) as pdf:
+            with pdfplumber.open(self.file) as pdf:
                 for i, page in enumerate(pdf.pages):
                     text = page.extract_text()
                     if not text:
@@ -437,7 +437,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        statement_parser = StatementParser(args.file_path)
+        statement_parser = StatementParser(args.file_path, Path(args.file_path).name)
         df = statement_parser.parse()
         
         # Convert DataFrame to dictionary format

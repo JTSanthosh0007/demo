@@ -1,0 +1,6 @@
+// ... existing code ...
+  const [phone, setPhone] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null) // Removed <string | null>
+  const [success, setSuccess] = useState(false)
+// ... existing code ...

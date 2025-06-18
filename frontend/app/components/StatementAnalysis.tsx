@@ -763,14 +763,14 @@ export const PhonePeAnalysisView: React.FC<{
               <div className="bg-[#1C1C1E] rounded-2xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
                 <div style={{ height: '300px' }}>
-                  <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                    </div>
-                  </div>
-                ) : (
+                  <Chart data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
+                </div>
+              </div>
+            ) : (
               <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
                 <p className="text-zinc-400">No category data to display.</p>
-                  </div>
-                )}
+              </div>
+            )}
 
             {/* Summary */}
             <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
@@ -889,10 +889,10 @@ export const KotakAnalysisView: React.FC<{
               <div className="bg-[#1C1C1E] rounded-2xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
                 <div style={{ height: '300px' }}>
-                  <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                    </div>
-                  </div>
-                ) : (
+                  <Chart data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
+                </div>
+              </div>
+            ) : (
               <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
                 <p className="text-zinc-400">No category data to display.</p>
               </div>

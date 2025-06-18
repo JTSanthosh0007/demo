@@ -1988,10 +1988,38 @@ export default function StatementAnalysis({
           throw new Error(errorMessage);
         }
 
-        const results: AnalysisResult = {
-          ...data,
-          pageCount: data.pageCount || 0
+        // Transform backend data to match the frontend's expected AnalysisResult interface
+        const categoryBreakdown = data.categoryBreakdown || {};
+        const transactions = data.transactions || [];
+        const summary = {
+          totalReceived: data.totalReceived || 0,
+          totalSpent: data.totalSpent || 0,
+          balance: (data.totalReceived || 0) + (data.totalSpent || 0),
+          creditCount: transactions.filter((t: Transaction) => t.amount > 0).length,
+          debitCount: transactions.filter((t: Transaction) => t.amount < 0).length,
+          totalTransactions: transactions.length,
         };
+
+        const chartData = {
+          data: {
+            labels: Object.keys(categoryBreakdown),
+            datasets: [{
+              data: Object.values(categoryBreakdown).map(v => Math.abs(v as number)),
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#83E89E'],
+              hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#83E89E']
+            }]
+          }
+        };
+        
+        const results: AnalysisResult = {
+          transactions,
+          summary,
+          categoryBreakdown,
+          chartData,
+          accounts: data.accounts,
+          pageCount: data.pageCount || 0,
+        };
+
         console.log('Setting analysis results:', results);
         setAnalysisResults(results);
         setAnalysisState('results');

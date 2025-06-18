@@ -440,6 +440,7 @@ def main():
         statement_parser = StatementParser(args.file_path)
         df = statement_parser.parse()
         
+        # Convert DataFrame to dictionary format
         transactions = []
         for _, row in df.iterrows():
             transactions.append({
@@ -449,12 +450,15 @@ def main():
                 'category': str(row['category'])
             })
 
+        # Calculate totals
         total_received = float(df[df['amount'] > 0]['amount'].sum())
         total_spent = float(df[df['amount'] < 0]['amount'].sum())
         
+        # Calculate category breakdown
         category_breakdown = df[df['amount'] < 0].groupby('category')['amount'].sum().to_dict()
         category_breakdown = {k: float(v) for k, v in category_breakdown.items()}
 
+        # Create response object
         response = {
             'transactions': transactions,
             'totalReceived': total_received,
@@ -462,6 +466,7 @@ def main():
             'categoryBreakdown': category_breakdown
         }
 
+        # Print JSON output
         print(json.dumps(response))
         sys.exit(0)
 

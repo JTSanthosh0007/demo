@@ -333,232 +333,144 @@ class StatementParser:
                 'more retail', 'nature\'s basket', 'foodhall', 'metro cash & carry', 'vishal mega mart',
                 'flipkart', 'amazon', 'snapdeal', 'myntra', 'ajio', 'nykaa', 'tata cliq', 'meesho', 'limeroad',
                 'pepperfry', 'urban ladder', 'firstcry', 'hopscotch', 'bigbasket', 'grofers', 'jiomart',
-                'pharmeasy', 'netmeds', '1mg', 'medlife', 'lenskart', 'caratlane', 'bluestone', 'pepperfry',
-                'kirana', 'general store', 'provision store', 'departmental store', 'supermarket', 'hypermarket',
-                'mall', 'shopping center', 'emporium', 'bazaar', 'haat', 'mandi', 'wholesale', 'retail',
-                'sadar bazaar', 'chandni chowk', 'crawford market', 'commercial street', 'mg road', 't nagar',
-                'electronics', 'mobile', 'laptop', 'tv', 'refrigerator', 'washing machine', 'ac', 'furniture',
-                'home decor', 'kitchenware', 'appliances', 'clothing', 'footwear', 'accessories', 'jewelry',
-                'books', 'stationery', 'toys', 'sports', 'fitness', 'beauty', 'personal care', 'baby products'
+                'dmart', 'reliance smart', 'star bazaar', 'easyday club', 'le marche', 'modern bazaar',
+                'ratnadeep', 'namdhari\'s fresh', 'daily basket', 'country delight', 'bb daily'
             ],
             
-            # Travel & Transport - Indian Services
+            # Travel & Transport
             'travel': [
-                'indigo', 'air india', 'spicejet', 'go air', 'vistara', 'air asia', 'akasa air',
-                'alliance air', 'star air', 'flyeasy', 'truejet', 'air india express', 'jet airways',
-                'irctc', 'indian railways', 'railway', 'train', 'rajdhani', 'shatabdi', 'duronto',
-                'garib rath', 'jan shatabdi', 'sampark kranti', 'humsafar', 'tejas', 'vande bharat',
-                'passenger train', 'express train', 'local train', 'metro rail', 'suburban train',
-                'apsrtc', 'tsrtc', 'ksrtc', 'bmtc', 'best', 'msrtc', 'gsrtc', 'rsrtc', 'upsrtc',
-                'hrtc', 'prtc', 'punbus', 'tnstc', 'setc', 'kerala rtc', 'jksrtc', 'osrtc', 'wbtc',
-                'redbus', 'abhibus', 'paytm bus', 'makemytrip bus', 'goibibo bus', 'yatra bus',
-                'ola', 'uber', 'meru', 'savaari', 'rapido', 'jugnoo', 'fasttrack', 'mega cabs',
-                'easy cabs', 'tab cab', 'auto', 'rickshaw', 'taxi', 'cab', 'bike taxi', 'shuttle',
-                'makemytrip', 'goibibo', 'cleartrip', 'yatra', 'easemytrip', 'ixigo', 'paytm travel',
-                'via', 'akbar travels', 'sotc', 'thomas cook', 'cox & kings', 'kesari tours', 'veena world',
-                'oyo', 'fabhotels', 'treebo', 'lemon tree', 'taj', 'oberoi', 'itc', 'leela', 'marriott',
-                'hyatt', 'radisson', 'novotel', 'ibis', 'ginger', 'fortune', 'sarovar', 'royal orchid',
-                'indian oil', 'iocl', 'bharat petroleum', 'bpcl', 'hindustan petroleum', 'hpcl',
-                'reliance petroleum', 'essar oil', 'shell', 'petrol', 'diesel', 'cng', 'lpg', 'ev charging',
-                'fastag', 'netc fastag', 'paytm fastag', 'sbi fastag', 'icici fastag', 'hdfc fastag',
-                'axis fastag', 'airtel fastag', 'indusind fastag', 'kotak fastag', 'idfc fastag'
+                'uber', 'ola', 'rapido', 'meru', 'irctc', 'railways', 'redbus', 'abhibus', 'makemytrip', 
+                'goibibo', 'yatra', 'cleartrip', 'ixigo', 'easemytrip', 'indigo', 'spicejet', 'air india',
+                'vistara', 'goair', 'airasia', 'metro', 'bmrcl', 'dmrc', 'mmrcl', 'bus', 'auto', 'rickshaw',
+                'taxi', 'cab', 'flight', 'train', 'petrol', 'diesel', 'fuel', 'fastag', 'toll', 'parking'
             ],
             
-            # Bills & Utilities - Indian Providers
+            # Bills & Utilities
             'bills': [
-                'adani electricity', 'tata power', 'reliance energy', 'bses', 'bses rajdhani', 'bses yamuna',
-                'msedcl', 'mahadiscom', 'bescom', 'hescom', 'gescom', 'mescom', 'cescom', 'kseb', 'tneb',
-                'tangedco', 'apspdcl', 'apcpdcl', 'tsspdcl', 'tgnpdcl', 'wbsedcl', 'cesc', 'jvvnl',
-                'avvnl', 'jdvvnl', 'pspcl', 'uhbvn', 'dhbvn', 'uppcl', 'mvvnl', 'pvvnl', 'dvvnl', 'kesco',
-                'airtel', 'jio', 'vodafone idea', 'vi', 'bsnl', 'mtnl', 'tata tele', 'airtel broadband',
-                'jio fiber', 'act fibernet', 'hathway', 'den', 'siti', 'tata sky broadband', 'excitel',
-                'spectra', 'tikona', 'you broadband', 'nextra broadband', 'asianet', 'bsnl broadband',
-                'tata play', 'tata sky', 'dish tv', 'd2h', 'sun direct', 'airtel digital tv', 'dd free dish',
-                'den cable', 'hathway cable', 'siti cable', 'in cable', 'asianet digital', 'kerala vision',
-                'indane', 'hp gas', 'bharatgas', 'mahanagar gas', 'igl', 'mgl', 'gail gas', 'adani gas',
-                'gujarat gas', 'sabarmati gas', 'tripura natural gas', 'assam gas', 'central up gas',
-                'delhi jal board', 'mcgm water', 'bwssb', 'hmwssb', 'cmwssb', 'kwa', 'watco', 'phed',
-                'municipal water', 'corporation water', 'water board', 'water supply',
-                'bharat billpay', 'bbps', 'paytm bills', 'phonepe bills', 'amazon pay bills', 'google pay bills',
-                'freecharge bills', 'mobikwik bills', 'cred bills', 'airtel payments bank bills'
+                'electricity', 'bescom', 'bses', 'ad-ani electricity', 'mahadiscom', 'tata power', 'cesc',
+                'water', 'bwssb', 'delhi jal board', 'gas', 'lpg', 'adani gas', 'indraprastha gas', 'mahanagar gas',
+                'internet', 'wifi', 'broadband', 'act fibernet', 'hathway', 'jiofiber', 'airtel xstream',
+                'bsnl', 'recharge', 'bill', 'mobile', 'postpaid', 'prepaid', 'airtel', 'jio', 'vi', 'vodafone idea',
+                'dth', 'tata sky', 'dish tv', 'sun direct', 'airtel digital tv', 'maintenance', 'society'
             ],
             
-            'finance': [
-                'sbi', 'state bank', 'pnb', 'punjab national', 'bank of baroda', 'bob', 'bank of india',
-                'union bank', 'canara bank', 'indian bank', 'central bank', 'indian overseas', 'uco bank',
-                'bank of maharashtra', 'punjab & sind', 'hdfc bank', 'icici bank', 'axis bank', 'kotak',
-                'idfc first', 'yes bank', 'indusind', 'rbl', 'federal bank', 'south indian bank', 'karnataka bank',
-                'city union bank', 'dcb bank', 'dhanlaxmi bank', 'jammu & kashmir bank', 'bandhan bank',
-                'idbi bank', 'citi bank', 'hsbc', 'standard chartered', 'deutsche bank', 'dbs', 'barclays',
-                'airtel payments bank', 'paytm payments bank', 'india post payments bank', 'fino payments bank',
-                'jio payments bank', 'nsdl payments bank', 'au small finance', 'equitas small finance',
-                'ujjivan small finance', 'jana small finance', 'capital small finance', 'utkarsh small finance',
-                'north east small finance', 'fincare small finance', 'esaf small finance', 'suryoday small finance',
-                'lic', 'sbi life', 'hdfc life', 'icici prudential', 'max life', 'bajaj allianz life',
-                'aditya birla sun life', 'tata aia', 'exide life', 'pnb metlife', 'kotak life', 'canara hsbc',
-                'new india assurance', 'united india', 'oriental insurance', 'national insurance', 'iffco tokio',
-                'icici lombard', 'hdfc ergo', 'bajaj allianz general', 'tata aig', 'star health', 'care health',
-                'manipal cigna', 'aditya birla health', 'max bupa', 'niva bupa', 'reliance general', 'sbi general',
-                'sbi mutual fund', 'hdfc mutual fund', 'icici prudential mutual fund', 'aditya birla sun life mutual fund',
-                'nippon india mutual fund', 'kotak mutual fund', 'axis mutual fund', 'uti mutual fund',
-                'dsp mutual fund', 'idfc mutual fund', 'invesco mutual fund', 'franklin templeton',
-                'zerodha', 'groww', 'upstox', 'angel broking', 'iifl securities', 'motilal oswal', 'sharekhan',
-                'icici direct', 'hdfc securities', 'kotak securities', 'sbi securities', 'geojit', '5paisa',
-                'bajaj finserv', 'bajaj finance', 'hdfc ltd', 'lic housing finance', 'indiabulls housing',
-                'pnb housing', 'tata capital', 'aditya birla finance', 'icici home finance', 'l&t finance',
-                'manappuram finance', 'muthoot finance', 'shriram finance', 'cholamandalam investment',
-                'mahindra finance', 'home credit', 'fullerton india', 'iifl finance', 'dhani', 'paysense',
-                'moneyview', 'kreditbee', 'cashe', 'earlysalary', 'lendingkart', 'flexiloans', 'zestmoney'
-            ],
-            
-            'health': [
-                'apollo hospitals', 'fortis healthcare', 'max healthcare', 'manipal hospitals', 'narayana health',
-                'medanta', 'kokilaben hospital', 'lilavati hospital', 'jaslok hospital', 'hinduja hospital',
-                'aiims', 'kims', 'care hospitals', 'rainbow hospitals', 'yashoda hospitals', 'star hospitals',
-                'columbia asia', 'cloudnine', 'motherhood', 'artemis', 'bgs gleneagles', 'cmri', 'ruby hall',
-                'wockhardt', 'breach candy', 'aster', 'sims', 'srm', 'cmc vellore', 'st johns', 'ms ramaiah',
-                'apollo pharmacy', 'medplus', 'netmeds', '1mg', 'pharmeasy', 'wellness forever', 'medlife',
-                'frank ross', 'guardian pharmacy', 'truworth', 'planet health', 'dawaa dost', 'generico',
-                'zeno health', 'lifecare', 'apollo 24|7', 'tata 1mg', 'healthkart', 'pharmarack', 'myra',
-                'dr lal pathlabs', 'metropolis', 'thyrocare', 'suburban diagnostics', 'srg diagnostics',
-                'vijaya diagnostic', 'medall', 'suraksha diagnostic', 'max lab', 'apollo diagnostics',
-                'pathkind labs', 'neuberg diagnostics', 'mahajan imaging', 'anand diagnostic', 'aarthi scans',
-                'star health', 'care health', 'max bupa', 'niva bupa', 'aditya birla health', 'manipal cigna',
-                'hdfc ergo health', 'icici lombard health', 'sbi health', 'tata aig health', 'bajaj allianz health',
-                'new india health', 'oriental health', 'national health', 'united india health', 'mediclaim',
-                'patanjali', 'himalaya', 'dabur', 'baidyanath', 'zandu', 'organic india', 'kerala ayurveda',
-                'kottakkal arya vaidya sala', 'jiva ayurveda', 'kama ayurveda', 'biotique', 'kapiva',
-                'dhootapapeshwar', 'sri sri ayurveda', 'hamdard', 'mdh ayurveda', 'vaidyaratnam',
-                'cult fit', 'cure fit', 'gold gym', 'anytime fitness', 'fitness first', 'snap fitness',
-                'trueweight', 'healthifyme', 'fittr', 'stepathlon', 'fitpass', 'fitternity', 'growfitter',
-                'sarva yoga', 'yogisthaan', 'atmantan', 'ananda in the himalayas', 'soukya', 'kairali',
-                'niraamaya', 'somatheeram', 'devaaya', 'naad wellness', 'atmantan', 'vana', 'ananda spa'
-            ],
-            
-            'education': [
-                'dav', 'dps', 'delhi public school', 'kendriya vidyalaya', 'kv', 'jawahar navodaya vidyalaya',
-                'jnv', 'sainik school', 'central school', 'army public school', 'air force school', 'naval school',
-                'ryan international', 'amity', 'gd goenka', 'mount litera', 'shiv nadar', 'doon school',
-                'mayo college', 'welham', 'scindia', 'modern school', 'springdales', 'carmel', 'la martiniere',
-                'allen', 'aakash', 'fiitjee', 'resonance', 'bansal', 'vibrant', 'narayana', 'sri chaitanya',
-                'career launcher', 'time', 'ims', 'byju\'s', 'unacademy', 'vedantu', 'toppr', 'doubtnut',
-                'meritnation', 'embibe', 'gradeup', 'testbook', 'oliveboard', 'adda247', 'made easy',
-                'gate academy', 'ace academy', 'vajiram & ravi', 'vision ias', 'insights ias', 'plutus ias',
-                'iit', 'nit', 'iiit', 'aiims', 'iim', 'xlri', 'bits', 'vit', 'srm', 'manipal', 'amity',
-                'lpu', 'du', 'jnu', 'bhu', 'jamia', 'aligarh muslim university', 'amu', 'delhi university',
-                'mumbai university', 'calcutta university', 'madras university', 'osmania university',
-                'anna university', 'jadavpur university', 'banaras hindu university', 'andhra university',
-                'byju\'s', 'unacademy', 'vedantu', 'toppr', 'doubtnut', 'extramarks', 'meritnation',
-                'embibe', 'gradeup', 'testbook', 'oliveboard', 'adda247', 'khan academy', 'coursera',
-                'udemy', 'edx', 'skillshare', 'great learning', 'upgrad', 'simplilearn', 'scaler',
-                'masai school', 'newton school', 'almabetter', 'geekster', 'coding ninjas', 'interviewbit',
-                'ncert', 'schand', 'pearson', 'macmillan', 'oxford', 'cambridge', 'arihant', 'disha',
-                'mtg', 'cengage', 'oswaal', 'universal', 'ratna sagar', 'evergreen', 'together with',
-                'full marks', 'rd sharma', 'rs aggarwal', 'hc verma', 'pradeep', 'morrison and boyd'
-            ],
-            
-            'government': [
-                'income tax', 'gst', 'customs', 'passport', 'aadhaar', 'pan card', 'election commission',
-                'municipality', 'corporation', 'panchayat', 'tehsil', 'collector office', 'district office',
-                'police', 'traffic police', 'rto', 'transport department', 'electricity board', 'water board',
-                'land records', 'registration office', 'post office', 'india post', 'court fee', 'stamp duty',
-                'bsnl', 'mtnl', 'indian railways', 'irctc', 'india post', 'lic', 'epfo', 'esic', 'uidai',
-                'passport seva', 'vfs global', 'municipal corporation', 'electricity board', 'water board',
-                'gas agency', 'property tax', 'professional tax', 'road tax', 'vehicle registration',
-                'digilocker', 'umang', 'mygov', 'e-filing', 'gst portal', 'e-way bill', 'e-shram',
-                'cowin', 'aarogya setu', 'bhim', 'fastag', 'e-nam', 'swayam', 'diksha', 'e-pathshala',
-                'court fee', 'stamp duty', 'legal', 'lawyer', 'advocate', 'notary', 'affidavit',
-                'registration', 'documentation', 'will', 'power of attorney', 'agreement', 'contract',
-                'vakalatnama', 'bail', 'petition', 'case filing', 'legal heir', 'succession certificate'
-            ],
-            
-            'telecom': [
-                'jio', 'airtel', 'vodafone idea', 'vi', 'bsnl', 'mtnl', 'jio fiber', 'airtel xstream',
-                'act fibernet', 'hathway', 'tata sky broadband', 'you broadband', 'excitel', 'spectra',
-                'tikona', 'nextra', 'asianet', 'railwire', 'alliance broadband', 'den broadband',
-                'mobile recharge', 'prepaid recharge', 'postpaid bill', 'data pack', 'data recharge',
-                'talktime', 'special tariff', 'unlimited plan', 'combo plan', 'annual plan', 'monthly plan',
-                'broadband bill', 'fiber bill', 'internet bill', 'landline bill', 'dth recharge',
-                'mobile case', 'screen guard', 'tempered glass', 'charger', 'adapter', 'power bank',
-                'earphones', 'headphones', 'bluetooth', 'speaker', 'memory card', 'otg cable', 'data cable'
-            ],
-            
+            # Entertainment
             'entertainment': [
-                'netflix', 'amazon prime', 'hotstar', 'disney+ hotstar', 'sony liv', 'zee5', 'voot',
-                'alt balaji', 'mx player', 'jiocinema', 'sun nxt', 'hoichoi', 'aha', 'manorama max',
-                'discovery+', 'lionsgate play', 'apple tv+', 'eros now', 'shemaroo me', 'hungama play',
-                'spotify', 'jiosaavn', 'wynk music', 'gaana', 'amazon music', 'youtube music',
-                'hungama music', 'resso', 'apple music', 'soundcloud', 'raaga', 'saregama carvaan',
-                'pvr', 'inox', 'cinepolis', 'carnival cinemas', 'miraj cinemas', 'mukta a2', 'srs cinemas',
-                'movie max', 'big cinemas', 'asian cinemas', 'imax', 'prasads', 'urvashi', 'rex', 'galaxy',
-                'sterling', 'regal', 'eros', 'maratha mandir', 'gaiety galaxy', 'prithvi theatre',
-                'bookmyshow', 'paytm insider', 'skillbox', 'townscript', 'zomaland', 'vh1 supersonic',
-                'sunburn', 'nh7 weekender', 'lollapalooza', 'comic con', 'india art fair', 'kala ghoda',
-                'jaipur literature festival', 'meta theatre', 'prithvi theatre festival', 'serendipity arts'
+                'movie', 'cinema', 'pvr', 'inox', 'cinepolis', 'bookmyshow', 'ticketnew', 'paytm movies',
+                'netflix', 'amazon prime video', 'hotstar', 'disney+', 'sony liv', 'zee5', 'voot', 'altbalaji',
+                'spotify', 'gaana', 'jiosaavn', 'wynk music', 'youtube premium', 'subscription', 'concert', 'event'
             ],
             
-            'clothing': [
-                'fabindia', 'biba', 'w for woman', 'global desi', 'and', 'aurelia', 'manyavar', 'mohey',
-                'raymond', 'peter england', 'louis philippe', 'van heusen', 'allen solly', 'park avenue',
-                'monte carlo', 'wills lifestyle', 'indian terrain', 'spykar', 'killer jeans', 'mufti',
-                'woodland', 'red tape', 'bata', 'liberty', 'relaxo', 'khadim', 'metro shoes', 'inc.5',
-                'shoppers stop', 'lifestyle', 'westside', 'pantaloons', 'max', 'reliance trends',
-                'v mart', 'brand factory', 'central', 'first cry', 'ajio', 'myntra', 'nykaa fashion',
-                'tanishq', 'kalyan jewellers', 'malabar gold', 'joyalukkas', 'pc jeweller', 'tribhovandas',
-                'grt jewellers', 'jos alukkas', 'senco gold', 'carat lane', 'bluestone', 'melorra',
-                'titan', 'fastrack', 'sonata', 'casio', 'fossil', 'timex', 'citizen', 'seiko', 'rado'
+            # Finance & Banking
+            'finance': [
+                'emi', 'loan', 'interest', 'insurance', 'premium', 'lic', 'hdfc life', 'icici prudential',
+                'sbi life', 'bajaj allianz', 'max life', 'policybazaar', 'mutual fund', 'sip', 'investment',
+                'zerodha', 'groww', 'upstox', 'angel broking', '5paisa', 'etmoney', 'kuvera', 'paytm money',
+                'deposit', 'fd', 'rd', 'credit card payment', 'debit card', 'bank charges', 'atm withdrawal',
+                'cash withdrawal', 'fee', 'penalty', 'tax', 'gst', 'income tax', 'tds', 'ecs', 'nach',
+                'auto debit', 'standing instruction', 'si', 'mandate', 'autopay', 'cheque', 'CHQ'
+            ],
+            
+            # Health & Medical
+            'health': [
+                'hospital', 'doctor', 'clinic', 'medical', 'medicine', 'pharmacy', 'apollo pharmacy',
+                'medplus', 'netmeds', 'pharmeasy', '1mg', 'practo', 'lal pathlabs', 'dr lal pathlabs',
+                'thyrocare', 'diagnostic', 'test', 'lab', 'health checkup', 'consultation', 'treatment',
+                'therapy', 'dental', 'eyecare', 'lenskart', 'ayurveda', 'homeopathy', 'yoga', 'fitness'
+            ],
+            
+            # Education
+            'education': [
+                'school', 'college', 'university', 'institute', 'tuition', 'coaching', 'course', 'training',
+                'byjus', 'unacademy', 'vedantu', 'coursera', 'udemy', 'edx', 'books', 'stationery', 'fees'
+            ],
+            
+            # Transfers & Payments
+            'transfer': [
+                'transfer', 'sent', 'received', 'payment', 'upi', 'neft', 'rtgs', 'imps', 'to acc', 'from acc',
+                'withdraw', 'deposit', 'cash', 'atm', 'vpa', 'paytm', 'phonepe', 'gpay', 'google pay',
+                'amazon pay', 'cred', 'mobikwik', 'freecharge', 'bhim', 'bharatpe', 'trf', 'fund transfer'
+            ],
+            
+            # Income
+            'income': [
+                'salary', 'sal', 'stipend', 'refund', 'reimbursement', 'cashback', 'credit', 'interest received'
+            ],
+            
+            # Miscellaneous
+            'misc': [
+                'rent', 'donation', 'charity', 'gift', 'pet', 'grooming', 'salon', 'spa', 'laundry', 'dry cleaning',
+                'courier', 'postal service', 'home services', 'urban company', 'government services', 'passport',
+                'driving license', 'pan card', 'aadhaar', 'legal services', 'consulting'
             ]
         }
         
-        for category, keywords in categories.items():
-            if any(keyword in description for keyword in keywords):
-                return category
+        # Special handling for common transaction types first
+        if 'upi-' in description or 'upi/' in description or 'upi:' in description: return 'transfer'
+        if 'imps-' in description or 'imps/' in description or 'imps:' in description: return 'transfer'
+        if 'neft-' in description or 'neft/' in description or 'neft:' in description: return 'transfer'
+        if 'rtgs-' in description or 'rtgs/' in description or 'rtgs:' in description: return 'transfer'
+        if 'atm withdrawal' in description or 'atm cash' in description: return 'finance'
+        if 'pos ' in description or 'pos/' in description or 'pos-' in description: return 'shopping'
+        if 'emi' in description or 'loan' in description: return 'finance'
+        if 'salary' in description or 'sal/' in description: return 'income'
+        if 'refund' in description: return 'income'
+        if 'cashback' in description: return 'income'
         
+        # General categorization
+        for category, keywords in categories.items():
+            for keyword in keywords:
+                if keyword in description:
+                    return category
+                    
         return 'miscellaneous expenses'
 
 def main():
-    parser = argparse.ArgumentParser(description='Parse bank statements')
-    parser.add_argument('file_path', help='Path to the PDF statement file')
+    """
+    Main function to run the parser from the command line for testing.
+    This allows for easy debugging of the parsing logic.
+    """
+    parser = argparse.ArgumentParser(description="Parse a bank statement file (PDF or CSV) into a standardized JSON format.")
+    parser.add_argument("file_path", help="The full path to the statement file.")
+    
     args = parser.parse_args()
 
-    try:
-        statement_parser = StatementParser(open(args.file_path, 'rb'), Path(args.file_path).name)
-        df = statement_parser.parse()
-        
-        # Convert DataFrame to dictionary format
-        transactions = []
-        for _, row in df.iterrows():
-            transactions.append({
-                'date': row['date'].strftime('%Y-%m-%d'),
-                'amount': float(row['amount']),
-                'description': str(row['description']) if 'description' in row else '',
-                'category': str(row['category'])
-            })
-
-        # Calculate totals
-        total_received = float(df[df['amount'] > 0]['amount'].sum())
-        total_spent = float(df[df['amount'] < 0]['amount'].sum())
-        
-        # Calculate category breakdown
-        category_breakdown = df[df['amount'] < 0].groupby('category')['amount'].sum().to_dict()
-        category_breakdown = {k: float(v) for k, v in category_breakdown.items()}
-
-        # Create response object
-        response = {
-            'transactions': transactions,
-            'totalReceived': total_received,
-            'totalSpent': total_spent,
-            'categoryBreakdown': category_breakdown
-        }
-
-        # Print JSON output
-        print(json.dumps(response))
-        sys.exit(0)
-
-    except Exception as e:
-        error_response = {'error': str(e)}
-        print(json.dumps(error_response), file=sys.stderr)
+    if not Path(args.file_path).is_file():
+        print(f"Error: File not found at {args.file_path}")
         sys.exit(1)
 
-if __name__ == '__main__':
+    try:
+        # For local testing, we read the file and pass the file object
+        with open(args.file_path, 'rb') as f:
+            # We need to pass both the file object and the filename
+            statement_parser = StatementParser(f, Path(args.file_path).name)
+            df = statement_parser.parse()
+        
+        if not df.empty:
+            # Convert DataFrame to JSON
+            # Convert datetime to string for JSON compatibility
+            df['date'] = df['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+            
+            output_json = {
+                "transactions": df.to_dict('records'),
+                "totalSpent": df[df['amount'] < 0]['amount'].sum(),
+                "totalReceived": df[df['amount'] > 0]['amount'].sum(),
+                "categoryBreakdown": df[df['amount'] < 0].groupby('category')['amount'].sum().to_dict()
+            }
+            
+            # Save to a file or print to console
+            output_filename = f"parsed_{Path(args.file_path).stem}.json"
+            with open(output_filename, 'w') as f:
+                json.dump(output_json, f, indent=4)
+            
+            print(f"Successfully parsed. Output saved to {output_filename}")
+        else:
+            print("Parsing resulted in an empty DataFrame. No transactions found or an error occurred.")
+
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        traceback.print_exc()
+        sys.exit(1)
+
+if __name__ == "__main__":
     main() 

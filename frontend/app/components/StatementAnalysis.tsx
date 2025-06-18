@@ -1985,12 +1985,12 @@ export default function StatementAnalysis({
         }
 
         // Transform backend data to match the frontend's expected AnalysisResult interface
-        const categoryBreakdown = data.categoryBreakdown || {};
+        const categoryBreakdown = data.category_breakdown || {};
         const transactions = data.transactions || [];
         const summary = {
-          totalReceived: data.totalReceived || 0,
-          totalSpent: data.totalSpent || 0,
-          balance: (data.totalReceived || 0) + (data.totalSpent || 0),
+          totalReceived: data.total_received || 0,
+          totalSpent: data.total_spent || 0,
+          balance: (data.total_received || 0) + (data.total_spent || 0),
           creditCount: transactions.filter((t: Transaction) => t.amount > 0).length,
           debitCount: transactions.filter((t: Transaction) => t.amount < 0).length,
           totalTransactions: transactions.length,
@@ -2013,7 +2013,7 @@ export default function StatementAnalysis({
           categoryBreakdown,
           chartData,
           accounts: data.accounts,
-          pageCount: data.pageCount || 0,
+          pageCount: data.page_count || 0,
         };
 
         console.log('Setting analysis results:', results);

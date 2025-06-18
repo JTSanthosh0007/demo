@@ -10,3 +10,4 @@ cryptography==42.0.2
 filetype>=1.2.0
 pdfminer.six>=20221105
 tabula-py>=2.7.0
+gunicorn

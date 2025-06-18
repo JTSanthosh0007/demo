@@ -764,20 +764,20 @@ export const PhonePeAnalysisView: React.FC<{
                 <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
                 <div style={{ height: '300px' }}>
                   <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                </div>
-              </div>
-            ) : (
+                    </div>
+                  </div>
+                ) : (
               <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
                 <p className="text-zinc-400">No category data to display.</p>
-              </div>
-            )}
-            
+                  </div>
+                )}
+
             {/* Summary */}
             <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-zinc-400">Total Received</p>
                 <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
-              </div>
+                  </div>
               <div>
                 <p className="text-sm text-zinc-400">Total Spent</p>
                 <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
@@ -801,7 +801,7 @@ export const PhonePeAnalysisView: React.FC<{
                 ))}
               </div>
             </div>
-          </div>
+              </div>
         );
       default:
         return null;
@@ -816,7 +816,7 @@ export const PhonePeAnalysisView: React.FC<{
         </button>
         <h1 className="text-xl font-bold">PhonePe Statement Analysis</h1>
       </div>
-      {renderContent()}
+        {renderContent()}
     </div>
   );
 };
@@ -890,20 +890,20 @@ export const KotakAnalysisView: React.FC<{
                 <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
                 <div style={{ height: '300px' }}>
                   <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                </div>
-              </div>
-            ) : (
+                    </div>
+                  </div>
+                ) : (
               <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
                 <p className="text-zinc-400">No category data to display.</p>
               </div>
             )}
-            
+
             {/* Summary */}
             <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-zinc-400">Total Received</p>
                 <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
-              </div>
+                  </div>
               <div>
                 <p className="text-sm text-zinc-400">Total Spent</p>
                 <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
@@ -1422,20 +1422,20 @@ export default function StatementAnalysis({
 
       try {
         const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
-        console.log('Making POST request to /api/analyze-statement.');
+      console.log('Making POST request to /api/analyze-statement.');
         const response = await fetch(`${backendUrl}/analyze`, {
-          method: 'POST',
+        method: 'POST',
           body: formData
-        });
-        console.log('Received response from API:', response.status);
-        const data = await response.json();
-        console.log('API Response Data:', data);
+      });
+      console.log('Received response from API:', response.status);
+      const data = await response.json();
+      console.log('API Response Data:', data);
 
-        if (!response.ok) {
-          const errorMessage = data.details || data.error || 'Analysis failed';
-          console.error('API returned an error:', errorMessage);
-          throw new Error(errorMessage);
-        }
+      if (!response.ok) {
+        const errorMessage = data.details || data.error || 'Analysis failed';
+        console.error('API returned an error:', errorMessage);
+        throw new Error(errorMessage);
+      }
 
         // CORRECTIVE FIX: Forcefully remap snake_case from backend to camelCase for frontend state.
         // This ensures the summary and chartData objects are always created correctly.
@@ -1460,8 +1460,8 @@ export default function StatementAnalysis({
             }]
           }
         };
-        
-        const results: AnalysisResult = {
+
+      const results: AnalysisResult = {
           transactions,
           summary,
           categoryBreakdown,
@@ -1471,11 +1471,11 @@ export default function StatementAnalysis({
         };
 
         console.log('Setting analysis results with correct structure:', results);
-        setAnalysisResults(results);
-        setAnalysisState('results');
-        console.log('Analysis Results Transactions:', results.transactions);
-        // The view change should happen here after successful analysis
-         setCurrentView('phonepe-analysis');
+      setAnalysisResults(results);
+      setAnalysisState('results');
+      console.log('Analysis Results Transactions:', results.transactions);
+      // The view change should happen here after successful analysis
+       setCurrentView('phonepe-analysis');
 
       } catch (error: any) {
         console.error('Error analyzing statement:', error);

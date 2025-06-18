@@ -50,8 +50,14 @@ async def analyze_statement(
         with open(temp_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Parse the statement using the file path
-        parser = StatementParser(temp_path)
+        # Use the correct parser based on the platform
+        if platform == 'kotak':
+            parser = KotakParser(temp_path)
+        elif platform == 'phonepe':
+            parser = StatementParser(temp_path)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported platform")
+
         df = parser.parse()
 
         # Convert to dictionary format
@@ -80,45 +86,6 @@ async def analyze_statement(
         # Clean up the temporary file
         if os.path.exists(temp_path):
             os.remove(temp_path)
-
-@app.post("/analyze-kotak-statement")
-async def analyze_kotak_statement(file: UploadFile = File(...)):
-    try:
-        content = await file.read()
-        file_obj = io.BytesIO(content)
-        
-        # We need to create a file-like object with a 'read' method
-        class FileObject:
-            def __init__(self, content):
-                self._content = content
-            def read(self):
-                return self._content
-
-        parser = KotakParser(FileObject(content))
-        df = parser.parse()
-        
-        # Convert to dictionary format
-        transactions = df.to_dict('records')
-        
-        # Calculate summary statistics
-        total_spent = sum(t['amount'] for t in transactions if t['amount'] < 0)
-        total_received = sum(t['amount'] for t in transactions if t['amount'] > 0)
-        
-        # Calculate category breakdown
-        category_breakdown = {}
-        for t in transactions:
-            if t['amount'] < 0:  # Only consider spending
-                category = t.get('category', 'Uncategorized')
-                category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
-        
-        return {
-            "transactions": transactions,
-            "totalSpent": total_spent,
-            "totalReceived": total_received,
-            "categoryBreakdown": category_breakdown
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error processing Kotak statement: {str(e)}")
 
 @app.post("/unlock-pdf")
 async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form(...)):

@@ -754,38 +754,36 @@ export const PhonePeAnalysisView: React.FC<{
             {analysisResults.summary && (
               <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
                 <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Total Received */}
                   <div className="bg-zinc-800/50 p-4 rounded-xl">
                     <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                    <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-green-400 mt-1">₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.creditCount} transactions</p>
                   </div>
                   
                   {/* Total Spent */}
                   <div className="bg-zinc-800/50 p-4 rounded-xl">
                     <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                    <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
-                  </div>
-                  
-                  {/* New: Total Amount */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Amount</p>
-                    <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-red-400 mt-1">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.debitCount} transactions</p>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-zinc-400">Total Amount</p>
-                    <div className="text-right">
-                      <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
-                        </p>
-                      </div>
+                <div className="mt-4 p-4 bg-zinc-800/50 rounded-2xl">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p className="text-sm text-zinc-400">Total Amount</p>
+                            <p className="text-xs text-zinc-500 mt-1">Total {analysisResults.summary.totalTransactions} transactions</p>
+                        </div>
+                        <div className="text-right">
+                            <p className={`text-2xl font-semibold ${(analysisResults.summary.balance) >= 0 ? 'text-white' : 'text-red-400'}`}>
+                                ₹{(analysisResults.summary.totalReceived - Math.abs(analysisResults.summary.totalSpent)).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }).replace('₹', '₹ ')}
+                            </p>
+                            <p className="text-xs text-zinc-500 mt-1">
+                                CR: ₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')} DR: ₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}
+                            </p>
+                        </div>
                     </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
-                    <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
-                  </div>
                 </div>
               </div>
             )}
@@ -1257,38 +1255,36 @@ export const KotakAnalysisView: React.FC<{
             {analysisResults.summary && (
               <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
                 <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Total Received */}
                   <div className="bg-zinc-800/50 p-4 rounded-xl">
                     <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                    <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-green-400 mt-1">₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.creditCount} transactions</p>
                   </div>
                   
                   {/* Total Spent */}
                   <div className="bg-zinc-800/50 p-4 rounded-xl">
                     <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                    <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
-                  </div>
-                  
-                  {/* New: Total Amount */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Amount</p>
-                    <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
+                    <p className="text-2xl font-semibold text-red-400 mt-1">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.debitCount} transactions</p>
                   </div>
                 </div>
-                <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-zinc-400">Total Amount</p>
-                    <div className="text-right">
-                      <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
-                        </p>
-                      </div>
+                <div className="mt-4 p-4 bg-zinc-800/50 rounded-2xl">
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <p className="text-sm text-zinc-400">Total Amount</p>
+                            <p className="text-xs text-zinc-500 mt-1">Total {analysisResults.summary.totalTransactions} transactions</p>
+                        </div>
+                        <div className="text-right">
+                            <p className={`text-2xl font-semibold ${(analysisResults.summary.balance) >= 0 ? 'text-white' : 'text-red-400'}`}>
+                                ₹{(analysisResults.summary.totalReceived - Math.abs(analysisResults.summary.totalSpent)).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }).replace('₹', '₹ ')}
+                            </p>
+                            <p className="text-xs text-zinc-500 mt-1">
+                                CR: ₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')} DR: ₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}
+                            </p>
+                        </div>
                     </div>
-                  <div className="flex justify-between items-center mt-1">
-                    <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
-                    <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
-                  </div>
                 </div>
               </div>
             )}

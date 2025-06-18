@@ -1986,12 +1986,12 @@ export default function StatementAnalysis({
 
         // CORRECTIVE FIX: Forcefully remap snake_case from backend to camelCase for frontend state.
         // This ensures the summary and chartData objects are always created correctly.
-        const categoryBreakdown = data.category_breakdown || {};
+        const categoryBreakdown = data.categoryBreakdown || {};
         const transactions = data.transactions || [];
         const summary = {
-          totalReceived: data.total_received || 0,
-          totalSpent: data.total_spent || 0,
-          balance: (data.total_received || 0) + (data.total_spent || 0),
+          totalReceived: data.totalReceived || 0,
+          totalSpent: data.totalSpent || 0,
+          balance: (data.totalReceived || 0) + (data.totalSpent || 0),
           creditCount: transactions.filter((t: Transaction) => t.amount > 0).length,
           debitCount: transactions.filter((t: Transaction) => t.amount < 0).length,
           totalTransactions: transactions.length,
@@ -2014,10 +2014,10 @@ export default function StatementAnalysis({
           categoryBreakdown,
           chartData,
           accounts: data.accounts,
-          pageCount: data.page_count || 0,
+          pageCount: data.pageCount || 0,
         };
 
-        console.log('Setting analysis results:', results);
+        console.log('Setting analysis results with correct structure:', results);
         setAnalysisResults(results);
         setAnalysisState('results');
         console.log('Analysis Results Transactions:', results.transactions);

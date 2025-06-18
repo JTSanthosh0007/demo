@@ -721,492 +721,102 @@ export const PhonePeAnalysisView: React.FC<{
 
   const renderContent = () => {
     switch (analysisState) {
+      case 'upload':
+        return (
+          <div 
+            className="flex flex-col items-center justify-center h-[calc(100vh-150px)] border-2 border-dashed border-zinc-700 rounded-3xl m-4"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <ArrowUpTrayIcon className="w-12 h-12 text-zinc-500 mb-4" />
+            <p className="text-zinc-400 mb-2">Drag & drop your PhonePe statement here</p>
+            <p className="text-zinc-600 text-sm mb-4">or</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Browse Files
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept=".pdf"
+            />
+          </div>
+        );
       case 'analyzing':
         return (
-          <div className="flex flex-col items-center justify-center p-8">
-            <div className="w-16 h-16 border-4 border-zinc-600 border-t-white rounded-full animate-spin mb-4"></div>
-            <p className="text-white text-lg font-medium">Analyzing your statement...</p>
-            <p className="text-zinc-400 text-sm mt-2">This may take a few moments</p>
+          <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]">
+            <LoadingSpinner />
+            <p className="text-zinc-400 mt-4">Analyzing your statement...</p>
+            <p className="text-zinc-500 text-sm">This may take a moment.</p>
           </div>
         );
-
       case 'results':
-        if (!analysisResults) {
-          return (
-            <div className="flex flex-col items-center justify-center p-8">
-              <p className="text-white text-lg font-medium">No results to display.</p>
-              <p className="text-zinc-400 text-sm mt-2">There was an issue fetching the analysis data.</p>
-            </div>
-          );
-        }
-        console.log('Rendering results with:', analysisResults);
+        if (!analysisResults) return null;
         return (
-          <div className="p-4 space-y-6">
-            {/* Account Analysis Section */}
-            {analysisResults.accounts && analysisResults.accounts.length > 0 && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Account Analysis</h3>
-                <AccountAnalysis accounts={analysisResults.accounts} />
-              </div>
-            )}
-
-            {/* Summary Card */}
-            {analysisResults.summary && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Total Received */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                    <p className="text-2xl font-semibold text-green-400 mt-1">₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')}</p>
-                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.creditCount} transactions</p>
-                  </div>
-                  
-                  {/* Total Spent */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                    <p className="text-2xl font-semibold text-red-400 mt-1">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}</p>
-                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.debitCount} transactions</p>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-zinc-800/50 rounded-2xl">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <p className="text-sm text-zinc-400">Total Amount</p>
-                            <p className="text-xs text-zinc-500 mt-1">Total {analysisResults.summary.totalTransactions} transactions</p>
-                        </div>
-                        <div className="text-right">
-                            <p className={`text-2xl font-semibold ${(analysisResults.summary.balance) >= 0 ? 'text-white' : 'text-red-400'}`}>
-                                ₹{(analysisResults.summary.totalReceived - Math.abs(analysisResults.summary.totalSpent)).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }).replace('₹', '₹ ')}
-                            </p>
-                            <p className="text-xs text-zinc-500 mt-1">
-                                CR: ₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')} DR: ₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}
-                            </p>
-                        </div>
-                    </div>
+          <div className="p-4 space-y-4">
+            <h2 className="text-xl font-bold text-white text-center">Analysis Results</h2>
+            {analysisResults.chartData ? (
+              <div className="bg-[#1C1C1E] rounded-2xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
+                <div style={{ height: '300px' }}>
+                  <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
                 </div>
               </div>
-            )}
-
-            {/* Charts */}
-            {mounted && analysisResults.chartData && analysisResults.categoryBreakdown && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Spending Analysis</h3>
-                <div className="flex space-x-2 mb-4">
-                  <button
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedChartType === 'pie' ? 'bg-blue-600 text-white' : 'bg-zinc-800/50 text-zinc-400'}`}
-                    onClick={() => setSelectedChartType('pie')}
-                  >
-                    Pie Chart
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedChartType === 'bar' ? 'bg-blue-600 text-white' : 'bg-zinc-800/50 text-zinc-400'}`}
-                    onClick={() => setSelectedChartType('bar')}
-                  >
-                    Bar Chart
-                  </button>
-                </div>
-
-                {selectedChartType === 'pie' ? (
-                  <div className="bg-zinc-800/50 rounded-2xl p-4 mb-6">
-                    <h4 className="text-sm font-medium text-zinc-400 mb-4">Spending by Category</h4>
-                    <div className="h-64">
-                      <Chart
-                        data={analysisResults.chartData.data}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: {
-                              position: 'right',
-                              labels: {
-                                color: 'white',
-                                font: {
-                                  size: 12
-                                },
-                                padding: 20
-                              }
-                            },
-                            tooltip: {
-                              callbacks: {
-                                label: function(context) {
-                                  return `${context.label}: ${context.parsed.toFixed(1)}%`;
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-zinc-800/50 rounded-2xl p-4 mb-6">
-                    <h4 className="text-sm font-medium text-zinc-400 mb-4">Spending by Category</h4>
-                    <div className="h-64">
-                       <Bar
-                          data={{
-                            labels: Object.keys(analysisResults.categoryBreakdown),
-                            datasets: [{
-                              label: 'Amount Spent',
-                              data: Object.values(analysisResults.categoryBreakdown).map(amount => Math.abs(amount)),
-                              backgroundColor: [ // Example colors, you might want to generate these dynamically
-                                  'rgba(255, 99, 132, 0.8)',
-                                  'rgba(54, 162, 235, 0.8)',
-                                  'rgba(255, 206, 86, 0.8)',
-                                  'rgba(75, 192, 192, 0.8)',
-                                  'rgba(153, 102, 255, 0.8)',
-                                  'rgba(255, 159, 64, 0.8)',
-                                  'rgba(199, 199, 199, 0.8)',
-                                  'rgba(83, 102, 255, 0.8)',
-                                  'rgba(40, 159, 64, 0.8)',
-                                  'rgba(210, 99, 132, 0.8)',
-                              ],
-                              borderColor: [ // Example colors
-                                  'rgba(255, 99, 132, 1)',
-                                  'rgba(54, 162, 235, 1)',
-                                  'rgba(255, 206, 86, 1)',
-                                  'rgba(75, 192, 192, 1)',
-                                  'rgba(153, 102, 255, 1)',
-                                  'rgba(255, 159, 64, 1)',
-                                  'rgba(199, 199, 199, 1)',
-                                  'rgba(83, 102, 255, 1)',
-                                  'rgba(40, 159, 64, 1)',
-                                  'rgba(210, 99, 132, 1)',
-                              ],
-                              borderWidth: 1,
-                            }]
-                          }}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              legend: {
-                                display: false, // Hide legend for bar chart if categories are on x-axis
-                                labels: {
-                                  color: 'white',
-                                }
-                              }
-                            },
-                            scales: {
-                              y: {
-                                beginAtZero: true,
-                                ticks: {
-                                  color: 'white'
-                                },
-                                grid: {
-                                  color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                              },
-                              x: {
-                                 ticks: {
-                                  color: 'white'
-                                },
-                                grid: {
-                                  color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                    </div>
-                  </div>
-                )}
-
-                {/* Line Chart */}
-                <div className="bg-zinc-800/50 rounded-2xl p-4">
-                  <h4 className="text-sm font-medium text-zinc-400 mb-4">Monthly Trends</h4>
-                  <div className="h-64">
-                    <Line
-                      data={{
-                        labels: analysisResults.transactions.map(t => new Date(t.date).toLocaleDateString()),
-                        datasets: [{
-                          label: 'Transaction Amount',
-                          data: analysisResults.transactions.map(t => t.amount),
-                          borderColor: 'rgb(75, 192, 192)',
-                          tension: 0.1
-                        }]
-                      }}
-                      options={{
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                          legend: {
-                            position: 'bottom',
-                            labels: {
-                              color: 'white'
-                            }
-                          }
-                        },
-                        scales: {
-                          y: {
-                            ticks: {
-                              color: 'white'
-                            },
-                            grid: {
-                              color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                          },
-                          x: {
-                            ticks: {
-                              color: 'white'
-                            },
-                            grid: {
-                              color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                          }
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
+            ) : (
+              <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
+                <p className="text-zinc-400">No category data to display.</p>
               </div>
             )}
-
-            {/* Category Breakdown */}
-            {analysisResults.categoryBreakdown && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
-                <div className="space-y-4">
-                  {Object.entries(analysisResults.categoryBreakdown).map(([category, amount]) => (
-                    <div key={category} className="flex justify-between items-center">
-                      <span className="text-zinc-300">{category}</span>
-                      <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
+            
+            {/* Summary */}
+            <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-zinc-400">Total Received</p>
+                <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
               </div>
-            )}
+              <div>
+                <p className="text-sm text-zinc-400">Total Spent</p>
+                <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
+              </div>
+            </div>
 
             {/* Recent Transactions */}
-            {analysisResults.transactions && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
-                <div className="space-y-4">
-                  {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <div>
-                        <p className="text-zinc-300">{transaction.description}</p>
-                        <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
-                      </div>
-                      <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        ₹{Math.abs(transaction.amount).toLocaleString()}
-                      </span>
+            <div className="bg-[#1C1C1E] rounded-2xl p-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
+              <div className="space-y-3">
+                {analysisResults.transactions.slice(0, 5).map((t, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white">{t.description}</p>
+                      <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString()}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Banks Found Section -> UPI Statement Section */}
-            {analysisResults.transactions && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <div className="flex flex-col mb-4">
-                  <h3 className="text-lg font-medium text-white">UPI Statement</h3>
-                  {analysisResults.transactions.length > 0 && (
-                    <p className="text-sm text-zinc-400 mt-1">
-                      {new Date(Math.min(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()} 
-                      {" to "} 
-                      {new Date(Math.max(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()}
+                    <p className={`font-semibold ${t.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ₹{Math.abs(t.amount).toLocaleString()}
                     </p>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  {(() => {
-                    const bankConfigs = {
-                      'SBI': {
-                        color: '#2d5a27',
-                        shortName: 'SBI',
-                        fullName: 'State Bank of India'
-                      },
-                      'HDFC': {
-                        color: '#004c8f',
-                        shortName: 'HDFC',
-                        fullName: 'HDFC Bank'
-                      },
-                      'ICICI': {
-                        color: '#F58220',
-                        shortName: 'ICICI',
-                        fullName: 'ICICI Bank'
-                      },
-                      'AXIS': {
-                        color: '#97144d',
-                        shortName: 'AXIS',
-                        fullName: 'Axis Bank'
-                      },
-                      'KOTAK': {
-                        color: '#EF3E23',
-                        shortName: 'KOTAK',
-                        fullName: 'Kotak Mahindra Bank'
-                      },
-                      'YES BANK': {
-                        color: '#00204E',
-                        shortName: 'YES',
-                        fullName: 'Yes Bank'
-                      },
-                      'CANARA': {
-                        color: '#00573F',
-                        shortName: 'CAN',
-                        fullName: 'Canara Bank'
-                      },
-                      'PNB': {
-                        color: '#4B266D',
-                        shortName: 'PNB',
-                        fullName: 'Punjab National Bank'
-                      },
-                      'BOB': {
-                        color: '#004990',
-                        shortName: 'BOB',
-                        fullName: 'Bank of Baroda'
-                      },
-                      'UNION BANK': {
-                        color: '#1F4E79',
-                        shortName: 'UBI',
-                        fullName: 'Union Bank of India'
-                      }
-                    };
-
-                    const foundBanks = Array.from(new Set(analysisResults.transactions
-                      .map(t => {
-                        const description = t.description.toUpperCase();
-                        return Object.keys(bankConfigs).find(bank => description.includes(bank));
-                      })
-                      .filter((bank): bank is keyof typeof bankConfigs => bank !== undefined)
-                    ));
-
-                    if (foundBanks.length === 0) {
-                      return (
-                        null // Return null instead of the message when no banks are found
-                      );
-                    }
-
-                    // If banks are found, we don't display them based on user request.
-                    return null; // Or an empty fragment <> </>
-
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* Important Notes Section */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center mt-0.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-zinc-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-white mb-3">Note:</h3>
-                  <ul className="space-y-2 text-sm text-zinc-400">
-                    <li className="flex items-start gap-2">
-                      <span className="text-zinc-500">•</span>
-                      <span>Self transfer payments are not included in the total money paid and money received calculations</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-zinc-500">•</span>
-                      <span>Payments that you might have hidden on payment history page will not be included in this statement</span>
-                    </li>
-                  </ul>
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         );
-
       default:
-        return (
-          <div className="p-4">
-            <div className="bg-zinc-900/80 rounded-3xl p-8 border border-zinc-800/50">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-zinc-800 rounded-full flex items-center justify-center">
-                  <DocumentTextIcon className="w-8 h-8 text-zinc-400" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Upload Statement</h3>
-                <p className="text-zinc-400 text-sm mb-6">Upload your bank statement to analyze your spending patterns</p>
-                
-                <div
-                  className="border-2 border-dashed border-zinc-700 rounded-2xl p-8 text-center cursor-pointer hover:border-zinc-600 transition-colors"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('fileInput')?.click()}
-                >
-                  <input
-                    type="file"
-                    id="fileInput"
-                    className="hidden"
-                    accept=".pdf"
-                    onChange={handleFileSelect}
-                  />
-                  <ArrowUpTrayIcon className="w-8 h-8 text-zinc-400 mx-auto mb-4" />
-                  <p className="text-zinc-300 mb-1">Drag and drop your statement here</p>
-                  <p className="text-zinc-500 text-sm">or click to browse</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return null;
     }
   };
 
-  const monthlyData = useMemo(() => {
-    if (!analysisResults?.transactions) return { labels: [], datasets: [] };
-
-    const monthlyTotals: { [key: string]: number } = {};
-
-    analysisResults.transactions.forEach(transaction => {
-      const date = new Date(transaction.date);
-      const monthYear = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-
-      if (!monthlyTotals[monthYear]) {
-        monthlyTotals[monthYear] = 0;
-      }
-      // Summing both credit and debit for net change
-      monthlyTotals[monthYear] += transaction.amount;
-    });
-
-    const sortedMonths = Object.keys(monthlyTotals).sort((a, b) => {
-      const [monthA, yearA] = a.split(' ');
-      const [monthB, yearB] = b.split(' ');
-      const dateA = new Date(`${monthA} 1, ${yearA}`);
-      const dateB = new Date(`${monthB} 1, ${yearB}`);
-      return dateA.getTime() - dateB.getTime();
-    });
-
-    const labels = sortedMonths;
-    const data = sortedMonths.map(month => monthlyTotals[month]);
-
-    return {
-      labels: labels,
-      datasets: [{
-        label: 'Net Amount',
-        data: data,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-        pointBackgroundColor: 'white',
-        pointBorderColor: 'rgb(75, 192, 192)',
-        pointHoverBackgroundColor: 'rgb(75, 192, 192)',
-        pointHoverBorderColor: 'white',
-      }]
-    };
-  }, [analysisResults?.transactions]);
-
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="p-4 flex items-center gap-3">
-        <button 
-          onClick={() => setCurrentView('home')}
-          className="text-white hover:text-zinc-300 transition-colors"
-        >
+    <div className="min-h-screen bg-black text-white">
+      <div className="p-4 bg-zinc-900 flex items-center gap-4">
+        <button onClick={() => setCurrentView('home')} className="p-2">
           <ArrowLeftIcon className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-medium text-white">PhonePe Statement Analysis</h1>
+        <h1 className="text-xl font-bold">PhonePe Statement Analysis</h1>
       </div>
-
-      {/* Content */}
-      <Suspense fallback={<LoadingSpinner />}>
-        {renderContent()}
-      </Suspense>
+      {renderContent()}
     </div>
   );
 };
@@ -1230,264 +840,107 @@ export const KotakAnalysisView: React.FC<{
   handleDrop,
   fileInputRef
 }) => {
-  const [selectedChartType, setSelectedChartType] = useState<'pie' | 'bar'>('pie');
   const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const renderContent = () => {
     switch (analysisState) {
+      case 'upload':
+        return (
+          <div 
+            className="flex flex-col items-center justify-center h-[calc(100vh-150px)] border-2 border-dashed border-zinc-700 rounded-3xl m-4"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <ArrowUpTrayIcon className="w-12 h-12 text-zinc-500 mb-4" />
+            <p className="text-zinc-400 mb-2">Drag & drop your Kotak statement here</p>
+            <p className="text-zinc-600 text-sm mb-4">or</p>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              Browse Files
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept=".pdf"
+            />
+          </div>
+        );
       case 'analyzing':
         return (
-          <div className="flex flex-col items-center justify-center p-8">
-            <div className="w-16 h-16 border-4 border-zinc-600 border-t-white rounded-full animate-spin mb-4"></div>
-            <p className="text-white text-lg font-medium">Analyzing your statement...</p>
-            <p className="text-zinc-400 text-sm mt-2">This may take a few moments</p>
+          <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]">
+            <LoadingSpinner />
+            <p className="text-zinc-400 mt-4">Analyzing your statement...</p>
+            <p className="text-zinc-500 text-sm">This may take a moment.</p>
           </div>
         );
       case 'results':
         if (!analysisResults) return null;
         return (
-          <div className="p-4 space-y-6">
-            {/* Summary Card */}
-            {analysisResults.summary && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Total Received */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                    <p className="text-2xl font-semibold text-green-400 mt-1">₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')}</p>
-                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.creditCount} transactions</p>
-                  </div>
-                  
-                  {/* Total Spent */}
-                  <div className="bg-zinc-800/50 p-4 rounded-xl">
-                    <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                    <p className="text-2xl font-semibold text-red-400 mt-1">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}</p>
-                    <p className="text-xs text-zinc-500 mt-1">{analysisResults.summary.debitCount} transactions</p>
-                  </div>
-                </div>
-                <div className="mt-4 p-4 bg-zinc-800/50 rounded-2xl">
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <p className="text-sm text-zinc-400">Total Amount</p>
-                            <p className="text-xs text-zinc-500 mt-1">Total {analysisResults.summary.totalTransactions} transactions</p>
-                        </div>
-                        <div className="text-right">
-                            <p className={`text-2xl font-semibold ${(analysisResults.summary.balance) >= 0 ? 'text-white' : 'text-red-400'}`}>
-                                ₹{(analysisResults.summary.totalReceived - Math.abs(analysisResults.summary.totalSpent)).toLocaleString('en-IN', { style: 'currency', currency: 'INR' }).replace('₹', '₹ ')}
-                            </p>
-                            <p className="text-xs text-zinc-500 mt-1">
-                                CR: ₹{analysisResults.summary.totalReceived.toLocaleString('en-IN')} DR: ₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString('en-IN')}
-                            </p>
-                        </div>
-                    </div>
+          <div className="p-4 space-y-4">
+            <h2 className="text-xl font-bold text-white text-center">Analysis Results</h2>
+            {analysisResults.chartData ? (
+              <div className="bg-[#1C1C1E] rounded-2xl p-4">
+                <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
+                <div style={{ height: '300px' }}>
+                  <Chart type="pie" data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
                 </div>
               </div>
-            )}
-
-            {/* Charts */}
-            {mounted && analysisResults?.chartData && analysisResults?.categoryBreakdown && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Spending Analysis</h3>
-                <div className="flex space-x-2 mb-4">
-                  <button
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedChartType === 'pie' ? 'bg-blue-600 text-white' : 'bg-zinc-800/50 text-zinc-400'}`}
-                    onClick={() => setSelectedChartType('pie')}
-                  >
-                    Pie Chart
-                  </button>
-                  <button
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${selectedChartType === 'bar' ? 'bg-blue-600 text-white' : 'bg-zinc-800/50 text-zinc-400'}`}
-                    onClick={() => setSelectedChartType('bar')}
-                  >
-                    Bar Chart
-                  </button>
-                </div>
-                {selectedChartType === 'pie' ? (
-                  <div className="bg-zinc-800/50 rounded-2xl p-4 mb-6">
-                    <h4 className="text-sm font-medium text-zinc-400 mb-4">Spending by Category</h4>
-                    <div className="h-64">
-                      <Chart
-                        data={analysisResults.chartData.data}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: {
-                              position: 'right',
-                              labels: {
-                                color: 'white',
-                                font: {
-                                  size: 12
-                                },
-                                padding: 20
-                              }
-                            },
-                            tooltip: {
-                              callbacks: {
-                                label: function(context) {
-                                  return `${context.label}: ${context.parsed.toFixed(1)}%`;
-                                }
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="bg-zinc-800/50 rounded-2xl p-4 mb-6">
-                    <h4 className="text-sm font-medium text-zinc-400 mb-4">Spending by Category</h4>
-                    <div className="h-64">
-                      <Bar
-                        data={analysisResults.chartData.data}
-                        options={{
-                          responsive: true,
-                          maintainAspectRatio: false,
-                          plugins: {
-                            legend: {
-                              display: false,
-                              labels: {
-                                color: 'white',
-                              }
-                            }
-                          },
-                          scales: {
-                            y: {
-                              beginAtZero: true,
-                              ticks: {
-                                color: 'white'
-                              },
-                              grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                              }
-                            },
-                            x: {
-                              ticks: {
-                                color: 'white'
-                              },
-                              grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
+            ) : (
+              <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
+                <p className="text-zinc-400">No category data to display.</p>
               </div>
             )}
-
-            {/* Category Breakdown */}
-            {analysisResults.categoryBreakdown && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
-                <div className="space-y-4">
-                  {Object.entries(analysisResults.categoryBreakdown).map(([category, amount]) => (
-                    <div key={category} className="flex justify-between items-center">
-                      <span className="text-zinc-300">{category}</span>
-                      <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
+            
+            {/* Summary */}
+            <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-zinc-400">Total Received</p>
+                <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
               </div>
-            )}
+              <div>
+                <p className="text-sm text-zinc-400">Total Spent</p>
+                <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
+              </div>
+            </div>
 
             {/* Recent Transactions */}
-            {analysisResults.transactions && (
-              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-                <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
-                <div className="space-y-4">
-                  {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
-                    <div key={index} className="flex justify-between items-center">
-                      <div>
-                        <p className="text-zinc-300">{transaction.description}</p>
-                        <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
-                      </div>
-                      <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        ₹{Math.abs(transaction.amount).toLocaleString()}
-                      </span>
+            <div className="bg-[#1C1C1E] rounded-2xl p-4">
+              <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
+              <div className="space-y-3">
+                {analysisResults.transactions.slice(0, 5).map((t, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white">{t.description}</p>
+                      <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString()}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Important Notes Section */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <div className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-zinc-800 flex-shrink-0 flex items-center justify-center mt-0.5">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-zinc-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-white mb-3">Note:</h3>
-                  <ul className="space-y-2 text-sm text-zinc-400">
-                    <li className="flex items-start gap-2">
-                      <span className="text-zinc-500">•</span>
-                      <span>Self transfer payments are not included in the total money paid and money received calculations</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-zinc-500">•</span>
-                      <span>Payments that you might have hidden on payment history page will not be included in this statement</span>
-                    </li>
-                  </ul>
-                </div>
+                    <p className={`font-semibold ${t.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      ₹{Math.abs(t.amount).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         );
       default:
-        return (
-          <div className="p-4">
-            <div className="bg-zinc-900/80 rounded-3xl p-8 border border-zinc-800/50">
-              <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-zinc-800 rounded-full flex items-center justify-center">
-                  <DocumentTextIcon className="w-8 h-8 text-zinc-400" />
-                </div>
-                <h3 className="text-lg font-medium text-white mb-2">Upload Statement</h3>
-                <p className="text-zinc-400 text-sm mb-6">Upload your Kotak bank statement to analyze your spending patterns</p>
-                <div
-                  className="border-2 border-dashed border-zinc-700 rounded-2xl p-8 text-center cursor-pointer hover:border-zinc-600 transition-colors"
-                  onDragOver={handleDragOver}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('fileInput')?.click()}
-                >
-                  <input
-                    type="file"
-                    id="fileInput"
-                    className="hidden"
-                    accept=".pdf"
-                    onChange={handleFileSelect}
-                  />
-                  <ArrowUpTrayIcon className="w-8 h-8 text-zinc-400 mx-auto mb-4" />
-                  <p className="text-zinc-300 mb-1">Drag and drop your statement here</p>
-                  <p className="text-zinc-500 text-sm">or click to browse</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="p-4 flex items-center gap-3">
-        <button 
-          onClick={() => setCurrentView('home')}
-          className="text-white hover:text-zinc-300 transition-colors"
-        >
+    <div className="min-h-screen bg-black text-white">
+      <div className="p-4 bg-zinc-900 flex items-center gap-4">
+        <button onClick={() => setCurrentView('home')} className="p-2">
           <ArrowLeftIcon className="w-6 h-6" />
         </button>
-        <h1 className="text-lg font-medium text-white">Kotak Bank Statement Analysis</h1>
+        <h1 className="text-xl font-bold">Kotak Bank Statement Analysis</h1>
       </div>
       {renderContent()}
     </div>

@@ -15,12 +15,13 @@ class KotakParser:
         
     def parse(self):
         """Parse Kotak bank statement PDF"""
+        doc = None
         try:
-            # Read the file content
-            pdf_stream = io.BytesIO(self.file_obj.read())
+            # Ensure the stream is at the beginning before reading
+            self.file_obj.seek(0)
             
-            # Open the PDF
-            doc = fitz.open(stream=pdf_stream, filetype="pdf")
+            # Open the PDF directly from the file-like object
+            doc = fitz.open(stream=self.file_obj, filetype="pdf")
             all_extracted_text = []
             
             # Extract text from each page
@@ -59,7 +60,7 @@ class KotakParser:
             logger.error(f"Error parsing Kotak PDF: {str(e)}")
             raise
         finally:
-            if 'doc' in locals():
+            if doc:
                 doc.close()
                 
     def _extract_transactions(self, text):

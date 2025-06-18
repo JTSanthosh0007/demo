@@ -33,96 +33,104 @@ class StatementParser:
         and falling back to text-based regex if needed.
         """
         logger.info(f"Starting PDF parsing for {self.filename}")
+        transactions = []
         
-        # --- Primary Method: Table-based Parsing ---
-        transactions = self._parse_pdf_tables()
+        try:
+            # Ensure the file stream is at the beginning before processing
+            self.file.seek(0)
+            
+            with pdfplumber.open(self.file) as pdf:
+                # --- Primary Method: Table-based Parsing ---
+                transactions = self._parse_pdf_tables(pdf)
 
-        # --- Fallback Method: Text-based Parsing ---
-        if not transactions:
-            logger.warning("Table-based parsing yielded no results. Attempting text-based fallback.")
-            transactions = self._parse_pdf_text()
+                # --- Fallback Method: Text-based Parsing ---
+                if not transactions:
+                    logger.warning("Table-based parsing yielded no results. Attempting text-based fallback.")
+                    transactions = self._parse_pdf_text(pdf)
 
-        if transactions:
-            final_df = pd.DataFrame(transactions)
-            # Final cleanup and sorting
-            final_df = final_df[~final_df['description'].str.contains('balance', case=False, na=False)]
-            final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
-            logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
-            return final_df
-        else:
-            logger.error("All parsing methods failed. No transactions could be extracted.")
+            if transactions:
+                final_df = pd.DataFrame(transactions)
+                # Final cleanup and sorting
+                final_df = final_df[~final_df['description'].str.contains('balance', case=False, na=False)]
+                final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
+                logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
+                return final_df
+            else:
+                logger.error("All parsing methods failed. No transactions could be extracted.")
+                return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
+        except Exception as e:
+            logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
 
-    def _parse_pdf_tables(self):
+    def _parse_pdf_tables(self, pdf):
         """Primary parsing method: Extracts data from structured tables."""
         transactions = []
         try:
-            with pdfplumber.open(self.file) as pdf:
-                for i, page in enumerate(pdf.pages):
-                    logger.info(f"TABLE PARSE: Processing page {i + 1}/{len(pdf.pages)}")
-                    
-                    tables = page.extract_tables()
-                    if not tables:
+            for i, page in enumerate(pdf.pages):
+                logger.info(f"TABLE PARSE: Processing page {i + 1}/{len(pdf.pages)}")
+                
+                tables = page.extract_tables()
+                if not tables:
+                    continue
+
+                for table_num, table in enumerate(tables):
+                    if not table:
                         continue
 
-                    for table_num, table in enumerate(tables):
-                        if not table:
-                            continue
+                    df = pd.DataFrame(table)
+                    
+                    header_keywords = ['date', 'transaction', 'narration', 'description', 'details', 'chq', 'ref', 'withdrawal', 'deposit', 'amount', 'balance']
+                    header_row_index = -1
+                    for row_idx, row in df.iterrows():
+                        row_str = ' '.join(map(str, row.values)).lower()
+                        if any(keyword in row_str for keyword in header_keywords):
+                            header_row_index = row_idx
+                            break
+                    
+                    if header_row_index == -1:
+                        continue
+                        
+                    header = [str(h).lower().strip() for h in df.iloc[header_row_index]]
+                    df.columns = header
+                    data_df = df.iloc[header_row_index + 1:].reset_index(drop=True)
 
-                        df = pd.DataFrame(table)
-                        
-                        header_keywords = ['date', 'transaction', 'narration', 'description', 'details', 'chq', 'ref', 'withdrawal', 'deposit', 'amount', 'balance']
-                        header_row_index = -1
-                        for row_idx, row in df.iterrows():
-                            row_str = ' '.join(map(str, row.values)).lower()
-                            if any(keyword in row_str for keyword in header_keywords):
-                                header_row_index = row_idx
-                                break
-                        
-                        if header_row_index == -1:
-                            continue
+                    date_col = next((c for c in header if 'date' in c), None)
+                    desc_col = next((c for c in header if any(k in c for k in ['narration', 'description', 'transaction details'])), None)
+                    withdrawal_col = next((c for c in header if any(k in c for k in ['withdrawal', 'debit', 'dr.'])), None)
+                    deposit_col = next((c for c in header if any(k in c for k in ['deposit', 'credit', 'cr.'])), None)
+
+                    if not all([date_col, desc_col, withdrawal_col, deposit_col]):
+                        continue
+
+                    for _, row in data_df.iterrows():
+                        try:
+                            date = self._parse_date(row[date_col])
+                            description = row[desc_col]
                             
-                        header = [str(h).lower().strip() for h in df.iloc[header_row_index]]
-                        df.columns = header
-                        data_df = df.iloc[header_row_index + 1:].reset_index(drop=True)
+                            withdrawal_str = str(row.get(withdrawal_col) or '0').replace(',', '').strip()
+                            deposit_str = str(row.get(deposit_col) or '0').replace(',', '').strip()
 
-                        date_col = next((c for c in header if 'date' in c), None)
-                        desc_col = next((c for c in header if any(k in c for k in ['narration', 'description', 'transaction details'])), None)
-                        withdrawal_col = next((c for c in header if any(k in c for k in ['withdrawal', 'debit', 'dr.'])), None)
-                        deposit_col = next((c for c in header if any(k in c for k in ['deposit', 'credit', 'cr.'])), None)
-
-                        if not all([date_col, desc_col, withdrawal_col, deposit_col]):
+                            amount = 0
+                            if withdrawal_str and float(withdrawal_str) > 0:
+                                amount = -abs(float(withdrawal_str))
+                            elif deposit_str and float(deposit_str) > 0:
+                                amount = abs(float(deposit_str))
+                            
+                            if description and amount != 0:
+                                transactions.append({
+                                    'date': date,
+                                    'amount': amount,
+                                    'description': str(description).strip(),
+                                    'category': self._categorize_transaction(str(description))
+                                })
+                        except (ValueError, TypeError):
                             continue
-
-                        for _, row in data_df.iterrows():
-                            try:
-                                date = self._parse_date(row[date_col])
-                                description = row[desc_col]
-                                
-                                withdrawal_str = str(row.get(withdrawal_col) or '0').replace(',', '').strip()
-                                deposit_str = str(row.get(deposit_col) or '0').replace(',', '').strip()
-
-                                amount = 0
-                                if withdrawal_str and float(withdrawal_str) > 0:
-                                    amount = -abs(float(withdrawal_str))
-                                elif deposit_str and float(deposit_str) > 0:
-                                    amount = abs(float(deposit_str))
-                                
-                                if description and amount != 0:
-                                    transactions.append({
-                                        'date': date,
-                                        'amount': amount,
-                                        'description': str(description).strip(),
-                                        'category': self._categorize_transaction(str(description))
-                                    })
-                            except (ValueError, TypeError):
-                                continue
             return transactions
         except Exception as e:
             logger.error(f"A critical error occurred during TABLE parsing: {e}", exc_info=True)
             return []
 
-    def _parse_pdf_text(self):
+    def _parse_pdf_text(self, pdf):
         """Fallback parsing method: Extracts data from raw text using regex."""
         transactions = []
         pattern = re.compile(
@@ -131,36 +139,35 @@ class StatementParser:
             r"(?P<amount>-?₹?\s?[\d,]+\.\d{2})"
         )
         try:
-            with pdfplumber.open(self.file) as pdf:
-                for i, page in enumerate(pdf.pages):
-                    text = page.extract_text()
-                    if not text:
-                        continue
-                    
-                    lines = text.strip().split('\n')
-                    
-                    for line in lines:
-                        match = pattern.search(line)
-                        if match:
-                            try:
-                                data = match.groupdict()
-                                date = self._parse_date(data.get('date'))
-                                description = data['description'].strip()
-                                amount_str = data['amount'].replace('₹', '').replace(',', '').strip()
-                                amount = float(amount_str)
+            for i, page in enumerate(pdf.pages):
+                text = page.extract_text()
+                if not text:
+                    continue
+                
+                lines = text.strip().split('\n')
+                
+                for line in lines:
+                    match = pattern.search(line)
+                    if match:
+                        try:
+                            data = match.groupdict()
+                            date = self._parse_date(data.get('date'))
+                            description = data['description'].strip()
+                            amount_str = data['amount'].replace('₹', '').replace(',', '').strip()
+                            amount = float(amount_str)
 
-                                if any(keyword in description.lower() for keyword in ['balance', 'opening', 'statement from']):
-                                    continue
-
-                                if description and amount != 0:
-                                    transactions.append({
-                                        'date': date,
-                                        'amount': amount,
-                                        'description': description,
-                                        'category': self._categorize_transaction(description)
-                                    })
-                            except (ValueError, TypeError):
+                            if any(keyword in description.lower() for keyword in ['balance', 'opening', 'statement from']):
                                 continue
+
+                            if description and amount != 0:
+                                transactions.append({
+                                    'date': date,
+                                    'amount': amount,
+                                    'description': description,
+                                    'category': self._categorize_transaction(description)
+                                })
+                        except (ValueError, TypeError):
+                            continue
             return transactions
         except Exception as e:
             logger.error(f"A critical error occurred during TEXT parsing: {e}", exc_info=True)
@@ -437,7 +444,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        statement_parser = StatementParser(args.file_path, Path(args.file_path).name)
+        statement_parser = StatementParser(open(args.file_path, 'rb'), Path(args.file_path).name)
         df = statement_parser.parse()
         
         # Convert DataFrame to dictionary format

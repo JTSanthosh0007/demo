@@ -1984,7 +1984,8 @@ export default function StatementAnalysis({
           throw new Error(errorMessage);
         }
 
-        // Transform backend data to match the frontend's expected AnalysisResult interface
+        // CORRECTIVE FIX: Forcefully remap snake_case from backend to camelCase for frontend state.
+        // This ensures the summary and chartData objects are always created correctly.
         const categoryBreakdown = data.category_breakdown || {};
         const transactions = data.transactions || [];
         const summary = {

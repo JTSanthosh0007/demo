@@ -95,11 +95,7 @@ export interface AnalysisResult {
     debitCount: number;
     totalTransactions: number;
   };
-  categoryBreakdown: Record<string, {
-    amount: number;
-    percentage: number;
-    count: number;
-  }>;
+  categoryBreakdown: Record<string, number>;
   accounts?: {
     accountName: string;
     bankLogo?: string;
@@ -854,7 +850,7 @@ export const PhonePeAnalysisView: React.FC<{
                             labels: Object.keys(analysisResults.categoryBreakdown),
                             datasets: [{
                               label: 'Amount Spent',
-                              data: Object.values(analysisResults.categoryBreakdown).map(cat => Math.abs(cat.amount)),
+                              data: Object.values(analysisResults.categoryBreakdown).map(amount => Math.abs(amount)),
                               backgroundColor: [ // Example colors, you might want to generate these dynamically
                                   'rgba(255, 99, 132, 0.8)',
                                   'rgba(54, 162, 235, 0.8)',
@@ -973,7 +969,7 @@ export const PhonePeAnalysisView: React.FC<{
               <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
                 <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
                 <div className="space-y-4">
-                  {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
+                  {Object.entries(analysisResults.categoryBreakdown).map(([category, amount]) => (
                     <div key={category} className="flex justify-between items-center">
                       <span className="text-zinc-300">{category}</span>
                       <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
@@ -1396,7 +1392,7 @@ export const KotakAnalysisView: React.FC<{
               <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
                 <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
                 <div className="space-y-4">
-                  {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
+                  {Object.entries(analysisResults.categoryBreakdown).map(([category, amount]) => (
                     <div key={category} className="flex justify-between items-center">
                       <span className="text-zinc-300">{category}</span>
                       <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>

@@ -75,6 +75,8 @@ async def analyze_statement(
         # Calculate summary statistics
         total_spent = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] < 0)
         total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
+        credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
+        debit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] < 0)
 
         # Calculate category breakdown
         category_breakdown = {}
@@ -102,11 +104,17 @@ async def analyze_statement(
 
         return {
             "transactions": transactions,
-            "totalSpent": total_spent,
-            "totalReceived": total_received,
+            "summary": {
+                "totalReceived": total_received,
+                "totalSpent": total_spent,
+                "balance": total_received + total_spent,
+                "creditCount": credit_count,
+                "debitCount": debit_count,
+                "totalTransactions": len(transactions)
+            },
             "categoryBreakdown": category_breakdown,
-            "pageCount": 0,  # Frontend expects this key
-            "chartData": chart_data # Add chart data to the response
+            "pageCount": 0,
+            "chartData": chart_data
         }
     except Exception as e:
         import traceback

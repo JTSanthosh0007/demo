@@ -90,13 +90,17 @@ class StatementParser:
                 r"(?P<date>\d{1,2} \w{3} \d{4}, \d{1,2}:\d{2} [AP]M)\n"
                 r"(?:.*?)\n"
                 r"₹ (?P<amount>[\d,]+\.\d{2})",
-                re.MULTILILINE
+                re.MULTILINE
             )
         ]
 
         try:
             with pdfplumber.open(self.file) as pdf:
                 full_text = "".join(page.extract_text() for page in pdf.pages if page.extract_text())
+                # Add logging to see the extracted text for debugging
+                logger.info("--- Extracted PhonePe PDF Text ---")
+                logger.info(full_text)
+                logger.info("------------------------------------")
 
             for pattern in phonepe_patterns:
                 matches = pattern.finditer(full_text)

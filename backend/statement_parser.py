@@ -65,7 +65,7 @@ class StatementParser:
 
     def _parse_phonepe_pdf(self):
         """Dedicated parser for PhonePe statements with a robust regex."""
-            transactions = []
+        transactions = []
         # A robust regex to capture the main transaction line from the logs
         phonepe_pattern = re.compile(
             r"(?P<date>\w{3} \d{1,2}, \d{4})\s+"  # e.g., Feb 27, 2025
@@ -76,6 +76,7 @@ class StatementParser:
         )
 
         try:
+            self.file.seek(0) # Reset file pointer
             with pdfplumber.open(self.file) as pdf:
                 full_text = "".join(page.extract_text() or "" for page in pdf.pages)
                 
@@ -90,24 +91,24 @@ class StatementParser:
                     data = match.groupdict()
                     description = data['description'].strip()
                     amount_str = data['amount'].replace(',', '')
-                                    amount = float(amount_str)
-                                    
+                    amount = float(amount_str)
+                    
                     # Use the 'type' to determine sign of amount
                     if data['type'] == 'DEBIT':
-                                            amount = -abs(amount)
-                                    else:
+                        amount = -abs(amount)
+                    else:
                         amount = abs(amount)
                     
                     # Date format is like "Feb 27, 2025"
                     date = datetime.strptime(data['date'], '%b %d, %Y')
 
-                                    transactions.append({
-                                        'date': date,
-                                        'amount': amount,
-                                        'description': description,
-                                        'category': self._categorize_transaction(description)
-                                    })
-                                except Exception as e:
+                    transactions.append({
+                        'date': date,
+                        'amount': amount,
+                        'description': description,
+                        'category': self._categorize_transaction(description)
+                    })
+                except Exception as e:
                     logger.warning(f"Could not process a PhonePe transaction match: {match.groups()}. Error: {e}")
 
         except Exception as e:
@@ -286,132 +287,54 @@ class StatementParser:
         description = description.lower()
         
         categories = {
-            # Food & Dining - Indian Restaurants & Food Services
             'food': [
                 'barbeque nation', 'burger king', 'cafe coffee day', 'ccd', 'dominos', 'haldiram', 
-                'kfc', 'mcdonalds', 'pizza hut', 'subway', 'wow momo', 'biryani blues', 'biryani by kilo',
-                'behrouz biryani', 'faasos', 'oven story', 'paradise biryani', 'punjab grill', 'mainland china',
-                'thali', 'dosa', 'idli', 'vada', 'sambar', 'chutney', 'paratha', 'naan', 'roti', 'chapati',
-                'dal', 'paneer', 'chole', 'rajma', 'kadhi', 'sabzi', 'bhaji', 'pav', 'vada pav', 'pav bhaji',
-                'misal pav', 'poha', 'upma', 'uttapam', 'appam', 'puttu', 'biryani', 'pulao', 'tandoori',
-                'kebab', 'tikka', 'kathi roll', 'frankie', 'pani puri', 'golgappa', 'bhel puri', 'sev puri',
-                'chaat', 'samosa', 'kachori', 'pakora', 'bhajiya', 'dhokla', 'khaman', 'thepla', 'khichdi',
-                'undhiyu', 'rasam', 'sambhar', 'avial', 'porotta', 'malabar parotta', 'kothu parotta',
-                'swiggy', 'zomato', 'uber eats', 'foodpanda', 'box8', 'freshmenu', 'eatfit', 'tinyowl',
-                'holachef', 'inner chef', 'yumist', 'dailyninja', 'milkbasket', 'supr daily', 'doodhwala',
-                'licious', 'freshtohome', 'meatigo', 'zappfresh', 'easyday', 'bigbasket', 'grofers', 'jiomart',
-                'haldiram', 'bikanervala', 'aggarwal sweets', 'ganguram', 'kc das', 'mithai', 'sweet',
-                'rasgulla', 'gulab jamun', 'jalebi', 'imarti', 'ladoo', 'barfi', 'peda', 'kalakand',
-                'mysore pak', 'kaju katli', 'soan papdi', 'petha', 'ghevar', 'malpua', 'rabri', 'kheer',
-                'payasam', 'basundi', 'kulfi', 'falooda', 'lassi', 'shrikhand', 'mishti doi', 'rasmalai'
+                'kfc', 'mcdonalds', 'pizza hut', 'subway', 'swiggy', 'zomato', 'food'
             ],
-            
-            # Shopping - Indian Retail & E-commerce
             'shopping': [
-                'reliance retail', 'dmart', 'big bazaar', 'future retail', 'v-mart', 'pantaloons', 'shoppers stop',
-                'lifestyle', 'westside', 'central', 'brand factory', 'max', 'trends', 'reliance digital',
-                'croma', 'vijay sales', 'pai international', 'girias', 'viveks', 'nilgiris', 'spencer',
-                'more retail', 'nature\'s basket', 'foodhall', 'metro cash & carry', 'vishal mega mart',
-                'flipkart', 'amazon', 'snapdeal', 'myntra', 'ajio', 'nykaa', 'tata cliq', 'meesho', 'limeroad',
-                'pepperfry', 'urban ladder', 'firstcry', 'hopscotch', 'bigbasket', 'grofers', 'jiomart',
-                'dmart', 'reliance smart', 'star bazaar', 'easyday club', 'le marche', 'modern bazaar',
-                'ratnadeep', 'namdhari\'s fresh', 'daily basket', 'country delight', 'bb daily'
+                'reliance retail', 'dmart', 'big bazaar', 'flipkart', 'amazon', 'snapdeal', 'myntra', 
+                'ajio', 'nykaa', 'shopping'
             ],
-            
-            # Travel & Transport
             'travel': [
-                'uber', 'ola', 'rapido', 'meru', 'irctc', 'railways', 'redbus', 'abhibus', 'makemytrip', 
-                'goibibo', 'yatra', 'cleartrip', 'ixigo', 'easemytrip', 'indigo', 'spicejet', 'air india',
-                'vistara', 'goair', 'airasia', 'metro', 'bmrcl', 'dmrc', 'mmrcl', 'bus', 'auto', 'rickshaw',
-                'taxi', 'cab', 'flight', 'train', 'petrol', 'diesel', 'fuel', 'fastag', 'toll', 'parking'
+                'uber', 'ola', 'rapido', 'irctc', 'redbus', 'makemytrip', 'goibibo', 'travel'
             ],
-            
-            # Bills & Utilities
             'bills': [
-                'electricity', 'bescom', 'bses', 'ad-ani electricity', 'mahadiscom', 'tata power', 'cesc',
-                'water', 'bwssb', 'delhi jal board', 'gas', 'lpg', 'adani gas', 'indraprastha gas', 'mahanagar gas',
-                'internet', 'wifi', 'broadband', 'act fibernet', 'hathway', 'jiofiber', 'airtel xstream',
-                'bsnl', 'recharge', 'bill', 'mobile', 'postpaid', 'prepaid', 'airtel', 'jio', 'vi', 'vodafone idea',
-                'dth', 'tata sky', 'dish tv', 'sun direct', 'airtel digital tv', 'maintenance', 'society'
+                'electricity', 'water', 'gas', 'internet', 'wifi', 'broadband', 'recharge', 'bill'
             ],
-            
-            # Entertainment
             'entertainment': [
-                'movie', 'cinema', 'pvr', 'inox', 'cinepolis', 'bookmyshow', 'ticketnew', 'paytm movies',
-                'netflix', 'amazon prime video', 'hotstar', 'disney+', 'sony liv', 'zee5', 'voot', 'altbalaji',
-                'spotify', 'gaana', 'jiosaavn', 'wynk music', 'youtube premium', 'subscription', 'concert', 'event'
+                'movie', 'cinema', 'pvr', 'inox', 'netflix', 'prime', 'hotstar', 'bookmyshow'
             ],
-            
-            # Finance & Banking
             'finance': [
-                'emi', 'loan', 'interest', 'insurance', 'premium', 'lic', 'hdfc life', 'icici prudential',
-                'sbi life', 'bajaj allianz', 'max life', 'policybazaar', 'mutual fund', 'sip', 'investment',
-                'zerodha', 'groww', 'upstox', 'angel broking', '5paisa', 'etmoney', 'kuvera', 'paytm money',
-                'deposit', 'fd', 'rd', 'credit card payment', 'debit card', 'bank charges', 'atm withdrawal',
-                'cash withdrawal', 'fee', 'penalty', 'tax', 'gst', 'income tax', 'tds', 'ecs', 'nach',
-                'auto debit', 'standing instruction', 'si', 'mandate', 'autopay', 'cheque', 'CHQ'
+                'emi', 'loan', 'interest', 'insurance', 'premium', 'lic', 'mutual fund', 'sip', 
+                'investment', 'deposit', 'credit card', 'debit card', 'bank charges'
             ],
-            
-            # Health & Medical
             'health': [
-                'hospital', 'doctor', 'clinic', 'medical', 'medicine', 'pharmacy', 'apollo pharmacy',
-                'medplus', 'netmeds', 'pharmeasy', '1mg', 'practo', 'lal pathlabs', 'dr lal pathlabs',
-                'thyrocare', 'diagnostic', 'test', 'lab', 'health checkup', 'consultation', 'treatment',
-                'therapy', 'dental', 'eyecare', 'lenskart', 'ayurveda', 'homeopathy', 'yoga', 'fitness'
+                'hospital', 'doctor', 'clinic', 'medical', 'medicine', 'pharmacy', 'apollo'
             ],
-            
-            # Education
             'education': [
-                'school', 'college', 'university', 'institute', 'tuition', 'coaching', 'course', 'training',
-                'byjus', 'unacademy', 'vedantu', 'coursera', 'udemy', 'edx', 'books', 'stationery', 'fees'
+                'school', 'college', 'university', 'institute', 'course', 'training', 'fees'
             ],
-            
-            # Transfers & Payments
             'transfer': [
-                'transfer', 'sent', 'received', 'payment', 'upi', 'neft', 'rtgs', 'imps', 'to acc', 'from acc',
-                'withdraw', 'deposit', 'cash', 'atm', 'vpa', 'paytm', 'phonepe', 'gpay', 'google pay',
-                'amazon pay', 'cred', 'mobikwik', 'freecharge', 'bhim', 'bharatpe', 'trf', 'fund transfer'
+                'transfer', 'sent', 'received', 'payment', 'upi', 'neft', 'rtgs', 'imps',
+                'paytm', 'phonepe', 'gpay', 'google pay', 'amazon pay'
             ],
-            
-            # Income
             'income': [
-                'salary', 'sal', 'stipend', 'refund', 'reimbursement', 'cashback', 'credit', 'interest received'
-            ],
-            
-            # Miscellaneous
-            'misc': [
-                'rent', 'donation', 'charity', 'gift', 'pet', 'grooming', 'salon', 'spa', 'laundry', 'dry cleaning',
-                'courier', 'postal service', 'home services', 'urban company', 'government services', 'passport',
-                'driving license', 'pan card', 'aadhaar', 'legal services', 'consulting'
+                'salary', 'refund', 'cashback', 'credit', 'interest received'
             ]
         }
         
-        # Special handling for common transaction types first
-        if 'upi-' in description or 'upi/' in description or 'upi:' in description: return 'transfer'
-        if 'imps-' in description or 'imps/' in description or 'imps:' in description: return 'transfer'
-        if 'neft-' in description or 'neft/' in description or 'neft:' in description: return 'transfer'
-        if 'rtgs-' in description or 'rtgs/' in description or 'rtgs:' in description: return 'transfer'
-        if 'atm withdrawal' in description or 'atm cash' in description: return 'finance'
-        if 'pos ' in description or 'pos/' in description or 'pos-' in description: return 'shopping'
-        if 'emi' in description or 'loan' in description: return 'finance'
-        if 'salary' in description or 'sal/' in description: return 'income'
-        if 'refund' in description: return 'income'
-        if 'cashback' in description: return 'income'
-        
-        # General categorization
         for category, keywords in categories.items():
             for keyword in keywords:
                 if keyword in description:
-                return category
-        
+                    return category
+                    
         return 'miscellaneous expenses'
 
 def main():
     """
     Main function to run the parser from the command line for testing.
-    This allows for easy debugging of the parsing logic.
     """
-    parser = argparse.ArgumentParser(description="Parse a bank statement file (PDF or CSV) into a standardized JSON format.")
+    parser = argparse.ArgumentParser(description="Parse a bank statement file.")
     parser.add_argument("file_path", help="The full path to the statement file.")
     
     args = parser.parse_args()
@@ -421,15 +344,11 @@ def main():
         sys.exit(1)
 
     try:
-        # For local testing, we read the file and pass the file object
         with open(args.file_path, 'rb') as f:
-            # We need to pass both the file object and the filename
             statement_parser = StatementParser(f, Path(args.file_path).name)
-        df = statement_parser.parse()
+            df = statement_parser.parse()
         
         if not df.empty:
-            # Convert DataFrame to JSON
-            # Convert datetime to string for JSON compatibility
             df['date'] = df['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
             
             output_json = {
@@ -439,14 +358,13 @@ def main():
                 "categoryBreakdown": df[df['amount'] < 0].groupby('category')['amount'].sum().to_dict()
             }
             
-            # Save to a file or print to console
             output_filename = f"parsed_{Path(args.file_path).stem}.json"
             with open(output_filename, 'w') as f:
                 json.dump(output_json, f, indent=4)
             
             print(f"Successfully parsed. Output saved to {output_filename}")
         else:
-            print("Parsing resulted in an empty DataFrame. No transactions found or an error occurred.")
+            print("Parsing resulted in an empty DataFrame.")
 
     except Exception as e:
         print(f"An unexpected error occurred: {e}")

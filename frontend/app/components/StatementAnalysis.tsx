@@ -735,7 +735,14 @@ export const PhonePeAnalysisView: React.FC<{
         );
 
       case 'results':
-        if (!analysisResults) return null;
+        if (!analysisResults) {
+          return (
+            <div className="flex flex-col items-center justify-center p-8">
+              <p className="text-white text-lg font-medium">No results to display.</p>
+              <p className="text-zinc-400 text-sm mt-2">There was an issue fetching the analysis data.</p>
+            </div>
+          );
+        }
         console.log('Rendering results with:', analysisResults);
         return (
           <div className="p-4 space-y-6">
@@ -748,45 +755,47 @@ export const PhonePeAnalysisView: React.FC<{
             )}
 
             {/* Summary Card */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {/* Total Received */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                  <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
-                </div>
-                
-                {/* Total Spent */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                  <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
-                </div>
-                
-                {/* New: Total Amount */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Amount</p>
-                  <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-zinc-400">Total Amount</p>
-                  <div className="text-right">
-                    <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
-                      </p>
-                    </div>
+            {analysisResults.summary && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Total Received */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Received (CR)</p>
+                    <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
                   </div>
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
-                  <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
+                  
+                  {/* Total Spent */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Spent (DR)</p>
+                    <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
+                  </div>
+                  
+                  {/* New: Total Amount */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Amount</p>
+                    <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-zinc-400">Total Amount</p>
+                    <div className="text-right">
+                      <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
+                    <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Charts */}
-            {mounted && analysisResults?.chartData && analysisResults?.categoryBreakdown && (
+            {mounted && analysisResults.chartData && analysisResults.categoryBreakdown && (
               <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
                 <h3 className="text-lg font-medium text-white mb-4">Spending Analysis</h3>
                 <div className="flex space-x-2 mb-4">
@@ -960,123 +969,129 @@ export const PhonePeAnalysisView: React.FC<{
             )}
 
             {/* Category Breakdown */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
-              <div className="space-y-4">
-                {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
-                  <div key={category} className="flex justify-between items-center">
-                    <span className="text-zinc-300">{category}</span>
-                    <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
-                  </div>
-                ))}
+            {analysisResults.categoryBreakdown && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
+                <div className="space-y-4">
+                  {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
+                    <div key={category} className="flex justify-between items-center">
+                      <span className="text-zinc-300">{category}</span>
+                      <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Recent Transactions */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
-              <div className="space-y-4">
-                {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="text-zinc-300">{transaction.description}</p>
-                      <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
+            {analysisResults.transactions && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
+                <div className="space-y-4">
+                  {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <div>
+                        <p className="text-zinc-300">{transaction.description}</p>
+                        <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
+                      </div>
+                      <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        ₹{Math.abs(transaction.amount).toLocaleString()}
+                      </span>
                     </div>
-                    <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      ₹{Math.abs(transaction.amount).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Banks Found Section -> UPI Statement Section */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <div className="flex flex-col mb-4">
-                <h3 className="text-lg font-medium text-white">UPI Statement</h3>
-                {analysisResults.transactions.length > 0 && (
-                  <p className="text-sm text-zinc-400 mt-1">
-                    {new Date(Math.min(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()} 
-                    {" to "} 
-                    {new Date(Math.max(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-              <div className="grid grid-cols-1 gap-4">
-                {(() => {
-                  const bankConfigs = {
-                    'SBI': {
-                      color: '#2d5a27',
-                      shortName: 'SBI',
-                      fullName: 'State Bank of India'
-                    },
-                    'HDFC': {
-                      color: '#004c8f',
-                      shortName: 'HDFC',
-                      fullName: 'HDFC Bank'
-                    },
-                    'ICICI': {
-                      color: '#F58220',
-                      shortName: 'ICICI',
-                      fullName: 'ICICI Bank'
-                    },
-                    'AXIS': {
-                      color: '#97144d',
-                      shortName: 'AXIS',
-                      fullName: 'Axis Bank'
-                    },
-                    'KOTAK': {
-                      color: '#EF3E23',
-                      shortName: 'KOTAK',
-                      fullName: 'Kotak Mahindra Bank'
-                    },
-                    'YES BANK': {
-                      color: '#00204E',
-                      shortName: 'YES',
-                      fullName: 'Yes Bank'
-                    },
-                    'CANARA': {
-                      color: '#00573F',
-                      shortName: 'CAN',
-                      fullName: 'Canara Bank'
-                    },
-                    'PNB': {
-                      color: '#4B266D',
-                      shortName: 'PNB',
-                      fullName: 'Punjab National Bank'
-                    },
-                    'BOB': {
-                      color: '#004990',
-                      shortName: 'BOB',
-                      fullName: 'Bank of Baroda'
-                    },
-                    'UNION BANK': {
-                      color: '#1F4E79',
-                      shortName: 'UBI',
-                      fullName: 'Union Bank of India'
+            {analysisResults.transactions && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <div className="flex flex-col mb-4">
+                  <h3 className="text-lg font-medium text-white">UPI Statement</h3>
+                  {analysisResults.transactions.length > 0 && (
+                    <p className="text-sm text-zinc-400 mt-1">
+                      {new Date(Math.min(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()} 
+                      {" to "} 
+                      {new Date(Math.max(...analysisResults.transactions.map(t => new Date(t.date).getTime()))).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  {(() => {
+                    const bankConfigs = {
+                      'SBI': {
+                        color: '#2d5a27',
+                        shortName: 'SBI',
+                        fullName: 'State Bank of India'
+                      },
+                      'HDFC': {
+                        color: '#004c8f',
+                        shortName: 'HDFC',
+                        fullName: 'HDFC Bank'
+                      },
+                      'ICICI': {
+                        color: '#F58220',
+                        shortName: 'ICICI',
+                        fullName: 'ICICI Bank'
+                      },
+                      'AXIS': {
+                        color: '#97144d',
+                        shortName: 'AXIS',
+                        fullName: 'Axis Bank'
+                      },
+                      'KOTAK': {
+                        color: '#EF3E23',
+                        shortName: 'KOTAK',
+                        fullName: 'Kotak Mahindra Bank'
+                      },
+                      'YES BANK': {
+                        color: '#00204E',
+                        shortName: 'YES',
+                        fullName: 'Yes Bank'
+                      },
+                      'CANARA': {
+                        color: '#00573F',
+                        shortName: 'CAN',
+                        fullName: 'Canara Bank'
+                      },
+                      'PNB': {
+                        color: '#4B266D',
+                        shortName: 'PNB',
+                        fullName: 'Punjab National Bank'
+                      },
+                      'BOB': {
+                        color: '#004990',
+                        shortName: 'BOB',
+                        fullName: 'Bank of Baroda'
+                      },
+                      'UNION BANK': {
+                        color: '#1F4E79',
+                        shortName: 'UBI',
+                        fullName: 'Union Bank of India'
+                      }
+                    };
+
+                    const foundBanks = Array.from(new Set(analysisResults.transactions
+                      .map(t => {
+                        const description = t.description.toUpperCase();
+                        return Object.keys(bankConfigs).find(bank => description.includes(bank));
+                      })
+                      .filter((bank): bank is keyof typeof bankConfigs => bank !== undefined)
+                    ));
+
+                    if (foundBanks.length === 0) {
+                      return (
+                        null // Return null instead of the message when no banks are found
+                      );
                     }
-                  };
 
-                  const foundBanks = Array.from(new Set(analysisResults.transactions
-                    .map(t => {
-                      const description = t.description.toUpperCase();
-                      return Object.keys(bankConfigs).find(bank => description.includes(bank));
-                    })
-                    .filter((bank): bank is keyof typeof bankConfigs => bank !== undefined)
-                  ));
+                    // If banks are found, we don't display them based on user request.
+                    return null; // Or an empty fragment <> </>
 
-                  if (foundBanks.length === 0) {
-                    return (
-                      null // Return null instead of the message when no banks are found
-                    );
-                  }
-
-                  // If banks are found, we don't display them based on user request.
-                  return null; // Or an empty fragment <> </>
-
-                })()}
+                  })()}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Important Notes Section */}
             <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
@@ -1243,42 +1258,44 @@ export const KotakAnalysisView: React.FC<{
         return (
           <div className="p-4 space-y-6">
             {/* Summary Card */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {/* Total Received */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Received (CR)</p>
-                  <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
-                </div>
-                
-                {/* Total Spent */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-                  <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
-                </div>
-                
-                {/* New: Total Amount */}
-                <div className="bg-zinc-800/50 p-4 rounded-xl">
-                  <p className="text-sm text-zinc-400">Total Amount</p>
-                  <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
-                <div className="flex justify-between items-center">
-                  <p className="text-sm text-zinc-400">Total Amount</p>
-                  <div className="text-right">
-                    <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
-                    </p>
+            {analysisResults.summary && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Transaction Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  {/* Total Received */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Received (CR)</p>
+                    <p className="text-xl font-medium text-green-400">₹{analysisResults.summary.totalReceived.toFixed(2)}</p>
+                  </div>
+                  
+                  {/* Total Spent */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Spent (DR)</p>
+                    <p className="text-xl font-medium text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toFixed(2)}</p>
+                  </div>
+                  
+                  {/* New: Total Amount */}
+                  <div className="bg-zinc-800/50 p-4 rounded-xl">
+                    <p className="text-sm text-zinc-400">Total Amount</p>
+                    <p className="text-xl font-medium text-white">₹{(analysisResults.summary.totalReceived + Math.abs(analysisResults.summary.totalSpent)).toFixed(2)}</p>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
-                  <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
+                <div className="mt-4 p-3 bg-zinc-800/50 rounded-2xl">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-zinc-400">Total Amount</p>
+                    <div className="text-right">
+                      <p className={`text-lg font-medium ${(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        ₹{Math.abs(analysisResults.summary.totalReceived + analysisResults.summary.totalSpent).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  <div className="flex justify-between items-center mt-1">
+                    <p className="text-xs text-zinc-500">Total {analysisResults.summary.totalTransactions} transactions</p>
+                    <p className="text-xs text-zinc-500">{analysisResults.pageCount} pages</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Charts */}
             {mounted && analysisResults?.chartData && analysisResults?.categoryBreakdown && (
@@ -1375,35 +1392,39 @@ export const KotakAnalysisView: React.FC<{
             )}
 
             {/* Category Breakdown */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
-              <div className="space-y-4">
-                {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
-                  <div key={category} className="flex justify-between items-center">
-                    <span className="text-zinc-300">{category}</span>
-                    <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
-                  </div>
-                ))}
+            {analysisResults.categoryBreakdown && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Spending by Category</h3>
+                <div className="space-y-4">
+                  {Object.entries(analysisResults.categoryBreakdown).map(([category, { amount, percentage, count }]) => (
+                    <div key={category} className="flex justify-between items-center">
+                      <span className="text-zinc-300">{category}</span>
+                      <span className="text-zinc-400">₹{Math.abs(amount).toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Recent Transactions */}
-            <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
-              <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
-              <div className="space-y-4">
-                {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
-                  <div key={index} className="flex justify-between items-center">
-                    <div>
-                      <p className="text-zinc-300">{transaction.description}</p>
-                      <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
+            {analysisResults.transactions && (
+              <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">
+                <h3 className="text-lg font-medium text-white mb-4">Recent Transactions</h3>
+                <div className="space-y-4">
+                  {analysisResults.transactions.slice(0, 5).map((transaction, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <div>
+                        <p className="text-zinc-300">{transaction.description}</p>
+                        <p className="text-xs text-zinc-500">{new Date(transaction.date).toLocaleDateString()}</p>
+                      </div>
+                      <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        ₹{Math.abs(transaction.amount).toLocaleString()}
+                      </span>
                     </div>
-                    <span className={`font-medium ${transaction.amount >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      ₹{Math.abs(transaction.amount).toLocaleString()}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Important Notes Section */}
             <div className="bg-zinc-900/80 rounded-3xl p-6 border border-zinc-800/50">

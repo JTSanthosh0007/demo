@@ -36,21 +36,22 @@ class StatementParser:
         transactions = []
         
         try:
-            # Ensure the file stream is at the beginning before processing
             self.file.seek(0)
             
-            with pdfplumber.open(self.file) as pdf:
-                # --- Primary Method: Table-based Parsing ---
-                transactions = self._parse_pdf_tables(pdf)
+            # Heuristic to select the right parser based on filename
+            if 'phonepe' in self.filename.lower():
+                logger.info("PhonePe statement detected. Using PhonePe-specific parser.")
+                return self._parse_phonepe_pdf()
 
-                # --- Fallback Method: Text-based Parsing ---
+            # Default generic parser
+            with pdfplumber.open(self.file) as pdf:
+                transactions = self._parse_pdf_tables(pdf)
                 if not transactions:
                     logger.warning("Table-based parsing yielded no results. Attempting text-based fallback.")
                     transactions = self._parse_pdf_text(pdf)
 
             if transactions:
                 final_df = pd.DataFrame(transactions)
-                # Final cleanup and sorting
                 final_df = final_df[~final_df['description'].str.contains('balance', case=False, na=False)]
                 final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
                 logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
@@ -61,6 +62,79 @@ class StatementParser:
         except Exception as e:
             logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
+
+    def _parse_phonepe_pdf(self):
+        """Dedicated parser for PhonePe statements with multiple regex fallbacks."""
+        transactions = []
+        # A list of regex patterns tailored for different PhonePe statement formats
+        phonepe_patterns = [
+            # Pattern 1: For transfers (sent to/paid to/received from)
+            re.compile(
+                r"(?P<description>(?:Sent to|Paid to|Received from) [^\n]+)\n"
+                r"(?P<date>\d{1,2} \w{3} \d{4}, \d{1,2}:\d{2} [AP]M)\n"
+                r"Transaction ID \d+\n"
+                r"₹ (?P<amount>[\d,]+\.\d{2})",
+                re.MULTILINE
+            ),
+            # Pattern 2: For cashback and other simple entries
+            re.compile(
+                r"(?P<description>Cashback Received|Payment for \w+)\n"
+                r"(?P<date>\d{1,2} \w{3} \d{4}, \d{1,2}:\d{2} [AP]M)\n"
+                r"Transaction ID \d+\n"
+                r"₹ (?P<amount>[\d,]+\.\d{2})",
+                re.MULTILINE
+            ),
+             # Pattern 3: More generic pattern to catch other formats
+            re.compile(
+                r"(?P<description>.*?)\n"
+                r"(?P<date>\d{1,2} \w{3} \d{4}, \d{1,2}:\d{2} [AP]M)\n"
+                r"(?:.*?)\n"
+                r"₹ (?P<amount>[\d,]+\.\d{2})",
+                re.MULTILILINE
+            )
+        ]
+
+        try:
+            with pdfplumber.open(self.file) as pdf:
+                full_text = "".join(page.extract_text() for page in pdf.pages if page.extract_text())
+
+            for pattern in phonepe_patterns:
+                matches = pattern.finditer(full_text)
+                for match in matches:
+                    data = match.groupdict()
+                    description = data['description'].strip()
+                    amount_str = data['amount'].replace(',', '')
+                    
+                    # Determine if it's a debit or credit
+                    if any(keyword in description for keyword in ['Sent to', 'Paid to']):
+                        amount = -abs(float(amount_str))
+                    else: # Assumes 'Received from', 'Cashback', etc. are credits
+                        amount = abs(float(amount_str))
+
+                    # Parse date (format: 15 Jan 2024, 08:30 PM)
+                    date = datetime.strptime(data['date'], '%d %b %Y, %I:%M %p')
+
+                    transactions.append({
+                        'date': date,
+                        'amount': amount,
+                        'description': description,
+                        'category': self._categorize_transaction(description)
+                    })
+                
+                # If we found transactions with the current pattern, we can stop.
+                if transactions:
+                    logger.info(f"Found {len(transactions)} transactions with pattern: {pattern.pattern}")
+                    break
+        
+        except Exception as e:
+            logger.error(f"Error during PhonePe parsing: {e}", exc_info=True)
+            return pd.DataFrame() # Return empty df on error
+
+        if not transactions:
+            logger.warning("No transactions found using any of the PhonePe regex patterns.")
+            return pd.DataFrame()
+
+        return pd.DataFrame(transactions).sort_values('date').reset_index(drop=True)
 
     def _parse_pdf_tables(self, pdf):
         """Primary parsing method: Extracts data from structured tables."""

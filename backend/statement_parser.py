@@ -27,92 +27,100 @@ class StatementParser:
             raise ValueError("Unsupported file format")
 
     def _parse_pdf(self):
-        """Handle PDF parsing with comprehensive extraction"""
+        """
+        Robustly parse tables from a PDF to extract transaction data.
+        This method avoids fragile regex in favor of table structure analysis.
+        """
+        logger.info(f"Starting PDF parsing for {self.filename}")
+        transactions = []
         try:
-            transactions = []
-            with open(self.file_path, 'rb') as file, pdfplumber.open(file) as pdf:
-                
-                # Transaction patterns (add new pattern for Kotak format)
-                transaction_patterns = [
-                    # Kotak Format: Date Narration Chq/RefNo Withdrawal(Dr)/Deposit(Cr) Balance
-                    re.compile(
-                        r'(?P<date>\d{2}-\d{2}-\d{4})\s+'  # Date (DD-MM-YYYY)
-                        r'(?P<narration>.*?)\s+' # Narration/Description (non-greedy match)
-                        r'(?:.*?)\s+' # Skip Chq/Ref No column (non-capturing, non-greedy)
-                        r'(?P<amount>[\d,]+\.?\d{2})\((?P<type>Cr|Dr)\)', # Amount with Dr/Cr type
-                        re.IGNORECASE
-                    ),
-                    # Pattern 1: Standard format (Keep existing for other banks)
-                    re.compile(
-                        r'(?P<date>(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*\d{1,2},\s*\d{4})\s*'
-                        r'(?P<description>.*?)'
-                        r'(?P<type>DEBIT|CREDIT|Dr|Cr)?\s*'
-                        r'(?:₹|Rs\.?)\s*(?P<amount>[\d,]+\.?\d*)',
-                        re.IGNORECASE | re.MULTILINE | re.DOTALL
-                    ),
-                    # Pattern 2: Alternative format (Keep existing for other banks)
-                    re.compile(
-                        r'(?P<date>\d{1,2}\s*(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*\d{4})\s*'
-                        r'(?P<description>.*?)'
-                        r'(?P<amount>[-+]?₹?\s*[\d,]+\.?\d*)',
-                        re.IGNORECASE | re.MULTILINE | re.DOTALL
-                    )
-                ]
+            with pdfplumber.open(self.file_path) as pdf:
+                for i, page in enumerate(pdf.pages):
+                    logger.info(f"Processing page {i + 1}/{len(pdf.pages)}")
+                    
+                    # Extract tables from the page
+                    tables = page.extract_tables()
+                    logger.info(f"Found {len(tables)} tables on page {i + 1}")
 
-                # Process each page individually
-                for page in pdf.pages:
-                    text = page.extract_text()
-                    if text and text.strip():
-                        # Apply patterns to the current page's text
-                        for pattern in transaction_patterns:
-                            for match in pattern.finditer(text):
-                                try:
-                                    date_str = match.group('date').strip()
-                                    date = self._parse_date(date_str)
-                                    
-                                    # Use 'narration' group for the new pattern, 'description' for others
-                                    if 'narration' in match.groupdict():
-                                        description = match.group('narration').strip()
-                                    else:
-                                        description = match.group('description').strip()
+                    for table_num, table in enumerate(tables):
+                        if not table:
+                            logger.warning(f"Skipping empty table {table_num + 1} on page {i + 1}")
+                            continue
 
-                                    amount_str = match.group('amount')
-                                    amount_str = re.sub(r'[₹,\s]', '', amount_str)
-                                    amount = float(amount_str)
-                                    
-                                    # Determine transaction type and adjust amount
-                                    if 'type' in match.groupdict():
-                                        txn_type = match.group('type').upper()
-                                        if txn_type in ['DR', 'DEBIT']:
-                                            amount = -abs(amount)
-                                        # If type is Cr or CREDIT, amount is already positive
-                                    # Handle cases where type might not be explicitly captured (less likely with new pattern)
-                                    elif amount < 0: # Assume negative sign in amount means debit if type not explicit
-                                         txn_type = 'DR'
-                                    else:
-                                         txn_type = 'CR'
+                        # Convert to DataFrame to easily find header and data
+                        df = pd.DataFrame(table)
+                        
+                        # Find the header row by looking for keywords
+                        header_keywords = ['date', 'transaction', 'narration', 'description', 'details', 'chq', 'ref', 'withdrawal', 'deposit', 'amount', 'balance']
+                        header_row_index = -1
+                        for row_idx, row in df.iterrows():
+                            row_str = ' '.join(map(str, row.values)).lower()
+                            if any(keyword in row_str for keyword in header_keywords):
+                                header_row_index = row_idx
+                                break
+                        
+                        if header_row_index == -1:
+                            logger.warning(f"No transaction header found in table {table_num + 1} on page {i + 1}. Skipping table.")
+                            continue
+                            
+                        # Set the header and clean up the DataFrame
+                        header = [str(h).lower().strip() for h in df.iloc[header_row_index]]
+                        df.columns = header
+                        data_df = df.iloc[header_row_index + 1:].reset_index(drop=True)
 
+                        # Identify columns for date, description, withdrawal, and deposit
+                        date_col = next((c for c in header if 'date' in c), None)
+                        desc_col = next((c for c in header if any(k in c for k in ['narration', 'description', 'transaction details'])), None)
+                        withdrawal_col = next((c for c in header if any(k in c for k in ['withdrawal', 'debit', 'dr.'])), None)
+                        deposit_col = next((c for c in header if any(k in c for k in ['deposit', 'credit', 'cr.'])), None)
+
+                        if not all([date_col, desc_col, withdrawal_col, deposit_col]):
+                            logger.warning(f"Could not identify all required columns in table {table_num + 1} on page {i + 1}. Skipping.")
+                            continue
+
+                        logger.info(f"Successfully identified transaction columns in table {table_num + 1} on page {i + 1}")
+
+                        # Process each transaction row
+                        for _, row in data_df.iterrows():
+                            try:
+                                date = self._parse_date(row[date_col])
+                                description = row[desc_col]
+                                
+                                # Withdrawal amount (debit)
+                                withdrawal_str = str(row[withdrawal_col] or '0').replace(',', '').strip()
+                                # Deposit amount (credit)
+                                deposit_str = str(row[deposit_col] or '0').replace(',', '').strip()
+
+                                amount = 0
+                                if withdrawal_str and float(withdrawal_str) > 0:
+                                    amount = -abs(float(withdrawal_str))
+                                elif deposit_str and float(deposit_str) > 0:
+                                    amount = abs(float(deposit_str))
+                                
+                                if description and amount != 0:
                                     transactions.append({
                                         'date': date,
                                         'amount': amount,
-                                        'description': description,
-                                        'category': self._categorize_transaction(description)
+                                        'description': str(description).strip(),
+                                        'category': self._categorize_transaction(str(description))
                                     })
-                                except Exception as e:
-                                    logger.warning(f"Could not process transaction on page {page.page_number} with pattern {pattern.pattern}: {e}")
-
+                            except (ValueError, TypeError) as e:
+                                logger.warning(f"Skipping row due to parsing error: {row}. Error: {e}")
+                                continue
+            
             if transactions:
-                df = pd.DataFrame(transactions)
-                df = df[df['amount'].abs() > 0]
-                df = df.drop_duplicates(subset=['date', 'amount', 'description'])
-                df = df.sort_values('date')
-                return df
+                final_df = pd.DataFrame(transactions)
+                # Remove rows where description might be a header fragment
+                final_df = final_df[~final_df['description'].str.contains('balance', case=False)]
+                final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
+                logger.info(f"Successfully parsed {len(final_df)} transactions.")
+                return final_df
             else:
-                logger.warning("No transactions found after parsing all pages.")
+                logger.warning("No transactions could be extracted from any table in the PDF.")
                 return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
 
         except Exception as e:
-            logger.error(f"PDF parsing error: {str(e)}\n{traceback.format_exc()}")
+            logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
 
     def _parse_date(self, date_str):

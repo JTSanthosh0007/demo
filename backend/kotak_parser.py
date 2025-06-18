@@ -1,5 +1,3 @@
-import sys
-from backend.parsers.kotak_parser import parse_kotak_statement
 import pandas as pd
 import re
 from datetime import datetime
@@ -10,53 +8,6 @@ import io
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-
-def main():
-    if len(sys.argv) != 2:
-        print("Usage: python test_kotak_parser.py <path_to_pdf>")
-        sys.exit(1)
-    
-    pdf_path = sys.argv[1]
-    try:
-        results = parse_kotak_statement(pdf_path)
-        print("\nParsing Results:")
-        print("----------------")
-        
-        # Print Account Info
-        print("\nAccount Information:")
-        for key, value in results['account_info'].items():
-            print(f"{key}: {value}")
-        
-        # Print Statement Period
-        print("\nStatement Period:")
-        print(f"Start Date: {results['statement_period']['start_date']}")
-        print(f"End Date: {results['statement_period']['end_date']}")
-        
-        # Print Summary
-        print("\nTransaction Summary:")
-        summary = results['summary']
-        print(f"Total Credit: ₹{summary['total_credit']:,.2f}")
-        print(f"Total Debit: ₹{summary['total_debit']:,.2f}")
-        print(f"Net Balance: ₹{summary['net_balance']:,.2f}")
-        print(f"Credit Transactions: {summary['credit_count']}")
-        print(f"Debit Transactions: {summary['debit_count']}")
-        print(f"Total Transactions: {summary['total_transactions']}")
-        
-        # Print Recent Transactions
-        print("\nRecent Transactions (last 5):")
-        for txn in results['transactions'][-5:]:
-            print(f"\nDate: {txn['date']}")
-            print(f"Description: {txn['description']}")
-            print(f"Amount: ₹{txn['amount']:,.2f}")
-            print(f"Category: {txn.get('category', 'Uncategorized')}")
-            print(f"Type: {txn['type']}")
-            
-    except Exception as e:
-        print(f"Error: {str(e)}")
-        sys.exit(1)
-
-if __name__ == "__main__":
-    main()
 
 class KotakParser:
     def __init__(self, file_obj):

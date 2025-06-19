@@ -635,7 +635,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           </div>
         </div>
         <div className="bg-zinc-900 rounded-lg p-3 text-center">
-          <p className="text-sm text-zinc-400">Net Balance</p>
+          <p className="text-sm text-zinc-400">Total CR+DR</p>
           <p className={`text-xl font-bold ${summary.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
             ₹{summary.balance.toLocaleString('en-IN')}
           </p>

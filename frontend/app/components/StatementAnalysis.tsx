@@ -76,7 +76,7 @@ type AnalysisData = {
   }[]
 }
 
-export type View = 'home' | 'settings'  | 'phonepe-analysis' | 'kotak-analysis' | 'more-upi-apps' | 'more-banks' | 'profile' | 'notifications' | 'report-issue' | 'signin' | 'banks' | 'upi-apps' | 'account-settings' | 'refer-and-and-earn' | 'favorites' | 'history';
+export type View = 'home' | 'settings' | 'phonepe-analysis' | 'kotak-analysis' | 'more-upi-apps' | 'more-banks' | 'profile' | 'notifications' | 'notifications-settings' | 'report-issue' | 'signin' | 'banks' | 'upi-apps' | 'account-settings' | 'refer-and-and-earn' | 'favorites' | 'history';
 
 export type AnalysisState = 'upload' | 'analyzing' | 'results'
 
@@ -140,7 +140,6 @@ interface SearchModalProps {
 interface AccountSettingsViewProps {
   setCurrentView: (view: View) => void;
   profile?: Profile; // Pass profile data
-  // supabase: any; // Pass Supabase client - uncomment when client is configured
 }
 
 const HomeView: React.FC<HomeViewProps> = ({
@@ -235,7 +234,7 @@ const HomeView: React.FC<HomeViewProps> = ({
   );
 };
 
-const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentView, profile /*, supabase*/ }) => {
+const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentView, profile }) => {
   const [name, setName] = useState(profile?.full_name || '');
   const [email, setEmail] = useState(profile?.email || '');
   const [phone, setPhone] = useState(profile?.phone_number || '');
@@ -243,8 +242,8 @@ const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentVie
   const [error, setError] = useState<string | null>(null);
 
   const handleSaveChanges = async () => {
-    if (!profile || !profile.email /* || !supabase*/) { // Check for profile and supabase
-      setError('User not logged in or Supabase client not available.');
+    if (!profile || !profile.email) {
+      setError('User not logged in.');
       return;
     }
 
@@ -252,27 +251,8 @@ const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentVie
     setError(null);
 
     try {
-      // Replace 'profiles' with your actual Supabase table name for profiles
-      // Replace 'id' with the correct column name for user ID in your profiles table
-      // const { error: updateError } = await supabase
-      //   .from('profiles')
-      //   .update({
-      //     full_name: name,
-      //     email: email,
-      //     phone_number: phone,
-      //   })
-      //   .eq('id', profile.email); // Assuming email is used as the unique identifier for simplicity here
-
-      // if (updateError) {
-      //   throw updateError;
-      // }
-
-      // Simulate successful save for now
       await new Promise(resolve => setTimeout(resolve, 1000));
       console.log('Profile updated successfully (simulated).');
-      // Optionally show a success message or navigate back
-      // setCurrentView('settings');
-
     } catch (err: any) {
       console.error('Error saving profile:', err.message);
       setError(`Failed to save changes: ${err.message}`);
@@ -281,7 +261,6 @@ const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentVie
     }
   };
 
-  // Use useEffect to update state if the profile prop changes (e.g., after fetching)
   useEffect(() => {
     if (profile) {
       setName(profile.full_name || '');
@@ -359,7 +338,6 @@ const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentVie
         {/* Additional Settings (Change Password) */}
         <div className="bg-zinc-900/80 rounded-2xl p-6 mb-4 border border-zinc-800/50">
           <h2 className="text-white text-lg font-medium mb-4">Additional Settings</h2>
-          {/* Placeholder for Change Password - Implement navigation later */}
           <button className="w-full bg-zinc-800/50 p-4 rounded-lg text-left text-white flex items-center justify-between hover:bg-zinc-800 transition-colors">
             <span>Change Password</span>
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -370,7 +348,6 @@ const AccountSettingsView: React.FC<AccountSettingsViewProps> = ({ setCurrentVie
 
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-        {/* Save Button */}
         <button
           className={`w-full bg-blue-600 text-white font-medium p-4 rounded-xl hover:bg-blue-700 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           onClick={handleSaveChanges}
@@ -705,14 +682,6 @@ export const PhonePeAnalysisView: React.FC<{
   handleDrop,
   fileInputRef
 }) => {
-  const [selectedChartType, setSelectedChartType] = useState<'pie' | 'bar'>('pie');
-  const [mounted, setMounted] = useState(false);
-  const [chartType, setChartType] = useState('pie');
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const renderContent = () => {
     switch (analysisState) {
       case 'upload':
@@ -790,11 +759,6 @@ export const KotakAnalysisView: React.FC<{
   handleDrop,
   fileInputRef
 }) => {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const renderContent = () => {
     switch (analysisState) {
       case 'upload':
@@ -850,7 +814,6 @@ export const KotakAnalysisView: React.FC<{
   );
 };
 
-// Add UPIAppsView component
 const UPIAppsView: React.FC<{ 
   setCurrentView: (view: View) => void;
   favorites: Set<string>;
@@ -990,7 +953,6 @@ const UPIAppsView: React.FC<{
   );
 };
 
-// Add BanksView component
 const BanksView: React.FC<{ 
   setCurrentView: (view: View) => void;
   favorites: Set<string>;
@@ -1121,7 +1083,6 @@ const BanksView: React.FC<{
   );
 };
 
-// Add ReferAndEarnView component
 const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ setCurrentView }) => {
   const [friendEmail, setFriendEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -1132,8 +1093,6 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
     setIsSending(true);
 
     try {
-      // Here you would integrate with your email sending service
-      // For now, we'll simulate the email sending with a timeout
       await new Promise(resolve => setTimeout(resolve, 1500));
       setShowSuccess(true);
       setFriendEmail('');
@@ -1160,7 +1119,6 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
 
       {/* Content */}
       <div className="p-4">
-        {/* Referral Card */}
         <div className="bg-zinc-900/80 rounded-2xl p-6 mb-6 border border-zinc-800/50">
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center">
@@ -1174,7 +1132,6 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
             Share the app with your friends and help them manage their finances better!
           </p>
           
-          {/* Referral Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm text-zinc-400 mb-1">Friend's Email</label>
@@ -1201,7 +1158,6 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
             </button>
           </form>
 
-          {/* Success Message */}
           {showSuccess && (
             <div className="mt-4 p-4 bg-green-500/20 rounded-xl">
               <p className="text-green-500 text-center text-sm">
@@ -1211,7 +1167,6 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
           )}
         </div>
 
-        {/* Benefits Section */}
         <div className="space-y-4">
           <div className="bg-zinc-900/80 rounded-2xl p-4 border border-zinc-800/50">
             <div className="flex items-center gap-3">
@@ -1248,12 +1203,10 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
 };
 
 export default function StatementAnalysis({
-  data = { transactions: [], totalReceived: 0, totalSpent: 0 },
   favorites = new Set<string>(),
   toggleFavorite = (appName: string) => {},
   navigate = (path: string) => {}
 }: { 
-  data?: Omit<AnalysisData, 'categoryBreakdown' | 'accounts'>;
   favorites?: Set<string>;
   toggleFavorite?: (appName: string) => void;
   navigate?: (path: string) => void;
@@ -1262,30 +1215,19 @@ export default function StatementAnalysis({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<Profile | undefined>(undefined);
-  const [mounted, setMounted] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [analysisState, setAnalysisState] = useState<'upload' | 'analyzing' | 'results'>('upload');
+  const [analysisState, setAnalysisState] = useState<AnalysisState>('upload');
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // Memoize handlers to prevent recreation on each render
   const toggleSearchModal = useCallback(() => {
     setIsSearchOpen(prev => !prev);
   }, []);
 
-  // Memoize expensive computations
-  const processedData = useMemo(() => {
-    // Move any expensive data processing here
-    return { transactions: [], totalReceived: 0, totalSpent: 0, categoryBreakdown: {} };
-  }, []);
-
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.log('General File selected:', file?.name);
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);
-      // Call analyzeStatement directly from here for any PDF selected via the general input
-      console.log('Calling analyzeStatement from general handler.');
       await analyzeStatement(file);
     } else {
       alert('Please select a valid PDF file');
@@ -1303,10 +1245,8 @@ export default function StatementAnalysis({
     event.stopPropagation();
     
     const file = event.dataTransfer.files?.[0];
-    console.log('File dropped:', file?.name);
     if (file && file.type === 'application/pdf') {
       setSelectedFile(file);
-      console.log('Calling analyzeStatement from drop handler.');
       await analyzeStatement(file);
     } else {
       alert('Please drop a valid PDF file');
@@ -1315,154 +1255,104 @@ export default function StatementAnalysis({
   };
 
   const analyzeStatement = async (file: File) => {
-    try {
-      setAnalysisState('analyzing');
-      console.log('Starting analysis for file:', file?.name);
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('platform', 'phonepe');
+    setAnalysisState('analyzing');
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    let platform = '';
+    if (currentView === 'phonepe-analysis') {
+      platform = 'phonepe';
+    } else if (currentView === 'kotak-analysis') {
+      platform = 'kotak';
+    } else {
+        // Fallback or default platform
+        platform = 'phonepe'
+    }
+    formData.append('platform', platform);
 
-      try {
-        const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
-      console.log('Making POST request to /api/analyze-statement.');
-        const response = await fetch(`${backendUrl}/analyze`, {
+    try {
+      const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
+      const response = await fetch(`${backendUrl}/analyze`, {
         method: 'POST',
-          body: formData
+        body: formData,
       });
-      console.log('Received response from API:', response.status);
-      const data = await response.json();
-      console.log('API Response Data:', data);
+
+      const results = await response.json();
 
       if (!response.ok) {
-        const errorMessage = data.details || data.error || 'Analysis failed';
-        console.error('API returned an error:', errorMessage);
-        throw new Error(errorMessage);
+        throw new Error(results.detail || 'Failed to analyze statement');
       }
 
-        // CORRECTIVE FIX: Forcefully remap snake_case from backend to camelCase for frontend state.
-        // This ensures the summary and chartData objects are always created correctly.
-        const categoryBreakdown = data.categoryBreakdown || {};
-        const transactions = data.transactions || [];
-        const summary = {
-          totalReceived: data.totalReceived || 0,
-          totalSpent: data.totalSpent || 0,
-          balance: (data.totalReceived || 0) + (data.totalSpent || 0),
-          creditCount: transactions.filter((t: Transaction) => t.amount > 0).length,
-          debitCount: transactions.filter((t: Transaction) => t.amount < 0).length,
-          totalTransactions: transactions.length,
-        };
-
-        const chartData = {
-          data: {
-            labels: Object.keys(categoryBreakdown),
-            datasets: [{
-              data: Object.values(categoryBreakdown).map(v => Math.abs(v as number)),
-              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#83E89E'],
-              hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#83E89E']
-            }]
-          }
-        };
-
-      const results: AnalysisResult = {
-          transactions,
-          summary,
-          categoryBreakdown,
-          chartData,
-          accounts: data.accounts,
-          pageCount: data.pageCount || 0,
-        };
-
-        console.log('Setting analysis results with correct structure:', results);
       setAnalysisResults(results);
       setAnalysisState('results');
-      console.log('Analysis Results Transactions:', results.transactions);
-      // The view change should happen here after successful analysis
-       setCurrentView('phonepe-analysis');
-
-      } catch (error: any) {
-        console.error('Error analyzing statement:', error);
-        const errorMessage = error.message.includes('No transactions found')
-          ? 'No transactions could be found in this PDF. Please make sure this is a valid PhonePe statement and try again.'
-          : 'Failed to analyze statement. Please make sure this is a valid PDF statement and try again.';
-        alert(errorMessage);
-        setAnalysisState('upload');
-      }
-    } catch (error: any) {
-      console.error('Error analyzing statement:', error);
-      const errorMessage = error.message.includes('No transactions found')
-        ? 'No transactions could be found in this PDF. Please make sure this is a valid PhonePe statement and try again.'
-        : 'Failed to analyze statement. Please make sure this is a valid PDF statement and try again.';
-      alert(errorMessage);
+    } catch (error) {
+      console.error(error);
+      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAnalysisState('upload');
     }
   };
 
-  console.log('Current View:', currentView);
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'home':
+        return <HomeView 
+          setCurrentView={setCurrentView} 
+          setIsSearchOpen={setIsSearchOpen} 
+          favorites={favorites} 
+          toggleFavorite={toggleFavorite} 
+          navigate={navigate}
+        />;
+      case 'phonepe-analysis':
+      case 'kotak-analysis':
+        const ViewComponent = currentView === 'phonepe-analysis' ? PhonePeAnalysisView : KotakAnalysisView;
+        return <ViewComponent
+          setCurrentView={setCurrentView}
+          selectedFile={selectedFile}
+          analysisState={analysisState}
+          analysisResults={analysisResults}
+          handleFileSelect={handleFileSelect}
+          handleDragOver={handleDragOver}
+          handleDrop={handleDrop}
+          fileInputRef={fileInputRef}
+        />;
+      case 'more-upi-apps':
+        return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;
+      case 'more-banks':
+        return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+      case 'settings':
+        return <SettingsView setCurrentView={setCurrentView} setIsSearchOpen={setIsSearchOpen} profile={profile} onLogout={() => setCurrentView('home')} />;
+      case 'account-settings':
+        return <AccountSettingsView
+          setCurrentView={setCurrentView}
+          profile={profile}
+        />;
+      case 'refer-and-and-earn':
+        return <ReferAndEarnView setCurrentView={setCurrentView} />;
+      case 'banks':
+        return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+      case 'upi-apps':
+        return <UPIAppsView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+      default:
+        return <HomeView 
+          setCurrentView={setCurrentView} 
+          setIsSearchOpen={setIsSearchOpen} 
+          favorites={favorites} 
+          toggleFavorite={toggleFavorite} 
+          navigate={navigate}
+        />;
+    }
+  }
 
   return (
     <div className="min-h-screen w-full max-w-4xl mx-auto">
-      {mounted && (
-        <>
-          {(() => {
-            switch (currentView) {
-              case 'home':
-                return <HomeView 
-                  setCurrentView={setCurrentView} 
-                  setIsSearchOpen={setIsSearchOpen} 
-                  favorites={favorites} 
-                  toggleFavorite={toggleFavorite} 
-                  navigate={navigate}
-                />;
-              case 'phonepe-analysis':
-                return <PhonePeAnalysisView
-                  setCurrentView={setCurrentView}
-                  selectedFile={selectedFile}
-                  analysisState={analysisState}
-                  analysisResults={analysisResults}
-                  handleFileSelect={handleFileSelect}
-                  handleDragOver={handleDragOver}
-                  handleDrop={handleDrop}
-                  fileInputRef={fileInputRef}
-                />;
-              case 'more-upi-apps':
-                return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;
-              case 'more-banks':
-                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-              case 'settings':
-                return <SettingsView setCurrentView={setCurrentView} setIsSearchOpen={setIsSearchOpen} profile={profile} onLogout={() => setCurrentView('home')} />;
-              case 'account-settings':
-                return <AccountSettingsView
-                  setCurrentView={setCurrentView}
-                  profile={profile} // Pass profile data
-                  // supabase={supabase} // Pass Supabase client - uncomment when configured
-                />;
-              case 'refer-and-and-earn':
-                return <ReferAndEarnView setCurrentView={setCurrentView} />;
-              case 'banks':
-                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-              case 'upi-apps':
-                return <UPIAppsView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-              default:
-                return <HomeView 
-                  setCurrentView={setCurrentView} 
-                  setIsSearchOpen={setIsSearchOpen} 
-                  favorites={favorites} 
-                  toggleFavorite={toggleFavorite} 
-                  navigate={navigate}
-                />;
-            }
-          })()}
-        </>
-      )}
-        {/* Search Modal */}
+      {renderCurrentView()}
       <SearchModal
         isOpen={isSearchOpen}
-          onClose={() => setIsSearchOpen(false)}
+        onClose={() => setIsSearchOpen(false)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-          groupedResults={{}}
-        />
+        groupedResults={{}}
+      />
     </div>
   );
 }

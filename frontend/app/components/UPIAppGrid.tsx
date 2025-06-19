@@ -1,5 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { UPIApp, getAppsByCategory } from '../constants/upiApps';
+import { Star } from 'lucide-react';
 
 interface UPIAppCardProps {
   app: UPIApp;
@@ -58,66 +59,44 @@ const UPIAppCard = memo(({ app, onSelect, isSelected }: UPIAppCardProps) => {
   );
 });
 
-interface UPIAppGridProps {
-  onSelectApp: (app: UPIApp) => void;
-  selectedAppId?: string;
-  showOnlyAvailable?: boolean;
+export interface UPIAppGridProps {
+  apps?: UPIApp[];
+  favorites: Set<string>;
+  toggleFavorite: (appName: string) => void;
 }
 
-const UPIAppGrid = memo(({ 
-  onSelectApp, 
-  selectedAppId,
-  showOnlyAvailable = true 
-}: UPIAppGridProps) => {
-  const allApps = getAppsByCategory(undefined, showOnlyAvailable);
-  
-  const categorizedApps = allApps.reduce((acc, app) => {
-    if (!acc[app.category]) {
-      acc[app.category] = [];
-    }
-    acc[app.category].push(app);
-    return acc;
-  }, {} as Record<UPIApp['category'], UPIApp[]>);
-
-  const categoryTitles = {
-    popular: 'Available UPI Apps for Analysis',
-    bank: 'Bank Apps',
-    wallet: 'Wallet Apps',
-    other: 'Other Apps'
-  };
-
+const UPIAppGrid = memo(({ apps, favorites, toggleFavorite }: UPIAppGridProps) => {
   return (
-    <div className="space-y-8">
-      {(Object.keys(categorizedApps) as Array<keyof typeof categorizedApps>).map(category => {
-        const apps = categorizedApps[category];
-        if (apps.length === 0) return null;
-
-        return (
-          <div key={category}>
-            <h2 className="text-lg font-semibold text-white mb-4">
-              {categoryTitles[category]}
-            </h2>
-            <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
-              {apps.slice(0, 4).map(app => (
-                <UPIAppCard
-                  key={app.id}
-                  app={app}
-                  onSelect={onSelectApp}
-                  isSelected={app.id === selectedAppId}
-                />
-              ))}
-              {[...Array(Math.max(0, 4 - apps.length))].map((_, index) => (
-                <div
-                  key={`empty-${index}`}
-                  className="w-full p-4 rounded-lg bg-gray-800 opacity-30"
-                />
-              ))}
+    <div className="grid grid-cols-1 gap-4">
+      {apps?.map((app) => (
+        <div 
+          key={app.name}
+          className="group bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800/50 hover:bg-zinc-800/80 transition-all duration-300"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden">
+                <div className="w-8 h-8 bg-[#5f259f] rounded-full flex items-center justify-center">
+                  <span className="text-sm font-bold text-white">Pe</span>
+                </div>
             </div>
+            <div className="flex-1">
+              <h3 className="text-white font-medium">{app.name}</h3>
+              <p className="text-sm text-zinc-400 mt-0.5">{app.description}</p>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleFavorite(app.name);
+              }}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <Star className={`w-5 h-5 ${favorites.has(app.name) ? 'fill-white text-white' : ''}`} />
+            </button>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
-  );
+  )
 });
 
 export default UPIAppGrid; 

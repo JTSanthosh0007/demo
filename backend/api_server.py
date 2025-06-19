@@ -77,10 +77,12 @@ async def analyze_statement(
         total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
         credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
         debit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] < 0)
-        
-        all_amounts = [t['amount'] for t in transactions if t.get('amount') is not None]
-        highest_transaction = max(all_amounts) if all_amounts else 0
-        lowest_transaction = min(all_amounts) if all_amounts else 0
+
+        # Find highest credit and highest debit
+        credits = [t['amount'] for t in transactions if t.get('amount', 0) > 0]
+        debits = [t['amount'] for t in transactions if t.get('amount', 0) < 0]
+        highest_credit = max(credits) if credits else 0
+        highest_debit = min(debits) if debits else 0
 
         # Calculate detailed category breakdown
         category_details = {}
@@ -122,8 +124,8 @@ async def analyze_statement(
                 "creditCount": credit_count,
                 "debitCount": debit_count,
                 "totalTransactions": len(transactions),
-                "highestTransaction": highest_transaction,
-                "lowestTransaction": lowest_transaction,
+                "highestCredit": highest_credit,
+                "highestDebit": highest_debit,
             },
             "detailedCategoryBreakdown": detailed_category_breakdown,
             "pageCount": page_count,

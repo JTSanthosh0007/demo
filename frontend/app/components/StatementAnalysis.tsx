@@ -96,8 +96,8 @@ export interface AnalysisResult {
     creditCount: number;
     debitCount: number;
     totalTransactions: number;
-    highestTransaction?: number;
-    lowestTransaction?: number;
+    highestCredit?: number;
+    highestDebit?: number;
   };
   detailedCategoryBreakdown: DetailedCategory[];
   pageCount?: number;
@@ -695,80 +695,65 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
 
       {/* Transaction Summary */}
       <div className="bg-zinc-900/80 rounded-2xl p-6 mb-6 border border-zinc-800/50">
-          <h3 className="text-lg font-semibold text-white mb-4">Transaction Summary</h3>
-
-          {/* Net Balance */}
-          <div className="text-center mb-6">
-              <p className="text-sm text-zinc-400">Net Balance</p>
-              <p className={`text-3xl font-bold ${summary.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  ₹{summary.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-              <p className="text-xs text-zinc-500 mt-1">
-                  Based on {summary.totalTransactions} transactions
-              </p>
+            <h3 className="text-lg font-semibold text-white mb-4">Transaction Summary</h3>
+            <div className="space-y-4">
+                {/* Total Money In */}
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-green-500/20 p-2 rounded-full">
+                            <ArrowTrendingUpIcon className="h-5 w-5 text-green-400" />
+                        </div>
+                        <div>
+                            <p className="text-white">Total Money In</p>
+                            <p className="text-xs text-zinc-400">{summary.creditCount} transactions</p>
+                        </div>
+                    </div>
+                    <p className="text-green-400 font-semibold text-lg">
+                        + ₹{summary.totalReceived.toLocaleString('en-IN')}
+                    </p>
                 </div>
 
-          {/* Divider */}
-          <hr className="border-zinc-700/50 my-4" />
-
-          {/* Flow Bar */}
-            <div className="w-full bg-zinc-700 rounded-full h-2 mb-6">
-                <div 
-                    className="bg-green-400 h-2 rounded-l-full" 
-                    style={{ 
-                        width: `${(summary.totalReceived / (summary.totalReceived + Math.abs(summary.totalSpent))) * 100}%`,
-                        float: 'left' 
-                    }}
-                ></div>
-                <div 
-                    className="bg-red-400 h-2 rounded-r-full" 
-                    style={{ 
-                        width: `${(Math.abs(summary.totalSpent) / (summary.totalReceived + Math.abs(summary.totalSpent))) * 100}%`,
-                        float: 'left' 
-                    }}
-                ></div>
-            </div>
-
-          {/* Money In / Money Out */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Money In */}
-              <div className="bg-zinc-800/50 rounded-xl p-4 flex gap-4 items-start">
-                  <div className="bg-green-500/20 p-2 rounded-full">
-                      <ArrowTrendingUpIcon className="h-6 w-6 text-green-400" />
-                  </div>
-                  <div>
-                      <p className="text-zinc-400 text-sm">Money In (Credit)</p>
-                      <p className="text-white font-semibold text-lg">
-                          ₹{summary.totalReceived.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-1">{summary.creditCount} transactions</p>
-                      <div className="mt-2 text-xs">
-                          <span className="text-zinc-400">Highest Credit: </span>
-                          <span className="text-green-400 font-medium">₹{summary.highestTransaction?.toLocaleString('en-IN') ?? 'N/A'}</span>
-                      </div>
-                  </div>
-              </div>
-
-              {/* Money Out */}
-              <div className="bg-zinc-800/50 rounded-xl p-4 flex gap-4 items-start">
-                  <div className="bg-red-500/20 p-2 rounded-full">
-                      <ArrowTrendingDownIcon className="h-6 w-6 text-red-400" />
-                  </div>
-                    <div>
-                      <p className="text-zinc-400 text-sm">Money Out (Debit)</p>
-                      <p className="text-white font-semibold text-lg">
-                          ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-1">{summary.debitCount} transactions</p>
-                      <div className="mt-2 text-xs">
-                          <span className="text-zinc-400">Highest Debit: </span>
-                          <span className="text-red-400 font-medium">₹{Math.abs(summary.lowestTransaction ?? 0).toLocaleString('en-IN') ?? 'N/A'}</span>
+                {/* Total Money Out */}
+                <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-red-500/20 p-2 rounded-full">
+                            <ArrowTrendingDownIcon className="h-5 w-5 text-red-400" />
+                        </div>
+                        <div>
+                            <p className="text-white">Total Money Out</p>
+                            <p className="text-xs text-zinc-400">{summary.debitCount} transactions</p>
+                        </div>
                     </div>
-                  </div>
-              </div>
-              </div>
-            </div>
+                    <p className="text-red-400 font-semibold text-lg">
+                        - ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}
+                    </p>
+                </div>
 
+                {/* Highest Transactions */}
+                 <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="text-center bg-zinc-800/50 rounded-lg p-2">
+                        <p className="text-xs text-zinc-400">Highest Credit</p>
+                        <p className="text-white font-medium">₹{summary.highestCredit?.toLocaleString('en-IN') ?? 'N/A'}</p>
+                    </div>
+                    <div className="text-center bg-zinc-800/50 rounded-lg p-2">
+                        <p className="text-xs text-zinc-400">Highest Debit</p>
+                        <p className="text-white font-medium">₹{Math.abs(summary.highestDebit ?? 0).toLocaleString('en-IN') ?? 'N/A'}</p>
+                    </div>
+                </div>
+
+                {/* Divider */}
+                <hr className="border-zinc-700/50 !my-6" />
+
+                {/* Net Balance */}
+                <div className="flex justify-between items-center">
+                    <p className="text-lg font-semibold text-white">Net Balance</p>
+                    <p className={`text-2xl font-bold ${summary.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        ₹{summary.balance.toLocaleString('en-IN')}
+                    </p>
+                </div>
+            </div>
+        </div>
+      
       {/* Spending Analysis Charts */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
         <div className="flex justify-between items-center mb-4">

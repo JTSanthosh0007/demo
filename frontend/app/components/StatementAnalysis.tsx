@@ -706,10 +706,28 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
               <p className="text-xs text-zinc-500 mt-1">
                   Based on {summary.totalTransactions} transactions
               </p>
-          </div>
+                </div>
 
           {/* Divider */}
           <hr className="border-zinc-700/50 my-4" />
+
+          {/* Flow Bar */}
+            <div className="w-full bg-zinc-700 rounded-full h-2 mb-6">
+                <div 
+                    className="bg-green-400 h-2 rounded-l-full" 
+                    style={{ 
+                        width: `${(summary.totalReceived / (summary.totalReceived + Math.abs(summary.totalSpent))) * 100}%`,
+                        float: 'left' 
+                    }}
+                ></div>
+                <div 
+                    className="bg-red-400 h-2 rounded-r-full" 
+                    style={{ 
+                        width: `${(Math.abs(summary.totalSpent) / (summary.totalReceived + Math.abs(summary.totalSpent))) * 100}%`,
+                        float: 'left' 
+                    }}
+                ></div>
+            </div>
 
           {/* Money In / Money Out */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -725,8 +743,8 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                       </p>
                       <p className="text-xs text-zinc-500 mt-1">{summary.creditCount} transactions</p>
                       <div className="mt-2 text-xs">
-                          <span className="text-zinc-400">Highest: </span>
-                          <span className="text-white font-medium">₹{summary.highestTransaction?.toLocaleString('en-IN') ?? 'N/A'}</span>
+                          <span className="text-zinc-400">Highest Credit: </span>
+                          <span className="text-green-400 font-medium">₹{summary.highestTransaction?.toLocaleString('en-IN') ?? 'N/A'}</span>
                       </div>
                   </div>
               </div>
@@ -736,21 +754,21 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                   <div className="bg-red-500/20 p-2 rounded-full">
                       <ArrowTrendingDownIcon className="h-6 w-6 text-red-400" />
                   </div>
-                  <div>
+                    <div>
                       <p className="text-zinc-400 text-sm">Money Out (Debit)</p>
                       <p className="text-white font-semibold text-lg">
                           ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </p>
                       <p className="text-xs text-zinc-500 mt-1">{summary.debitCount} transactions</p>
                       <div className="mt-2 text-xs">
-                          <span className="text-zinc-400">Highest: </span>
-                          <span className="text-white font-medium">₹{Math.abs(summary.lowestTransaction ?? 0).toLocaleString('en-IN') ?? 'N/A'}</span>
-                      </div>
+                          <span className="text-zinc-400">Highest Debit: </span>
+                          <span className="text-red-400 font-medium">₹{Math.abs(summary.lowestTransaction ?? 0).toLocaleString('en-IN') ?? 'N/A'}</span>
+                    </div>
                   </div>
               </div>
-          </div>
-      </div>
-      
+              </div>
+            </div>
+
       {/* Spending Analysis Charts */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
         <div className="flex justify-between items-center mb-4">
@@ -775,7 +793,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
             <Chart data={chartData} options={chartOptions} />
           ) : (
             <Bar data={chartData} options={barChartOptions} />
-          )}
+                )}
               </div>
             </div>
 
@@ -789,12 +807,12 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 <div className="flex items-center gap-3">
                   <span className={`w-3 h-3 rounded-full ${categoryColors[item.category.toLowerCase()] || categoryColors.default}`}></span>
                   <p className="font-semibold">{item.category}</p>
-                </div>
+              </div>
                 <div className="flex items-center gap-4">
                   <p className="font-bold">₹{item.amount.toLocaleString('en-IN')}</p>
                   {expandedCategory === item.category ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
+            </div>
                 </div>
-              </div>
               <div className="text-sm text-zinc-400 mt-2">
                 <p>Portion of spending: {item.percentage}%</p>
                 <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
@@ -806,16 +824,16 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 <div className="mt-4 space-y-2">
                   {item.transactions.map((t, i) => (
                     <div key={i} className="flex justify-between items-center text-sm border-t border-zinc-700 pt-2">
-                    <div>
+                <div>
                         <p className="font-medium text-white">{t.description}</p>
                         <p className="text-xs text-zinc-500">{new Date(t.date).toLocaleDateString('en-GB')}</p>
-                    </div>
+                </div>
                       <p className="font-semibold text-red-500">₹{Math.abs(t.amount).toLocaleString('en-IN')}</p>
-                  </div>
+              </div>
                 ))}
-              </div>
+            </div>
                 )}
-              </div>
+          </div>
           ))}
               </div>
             </div>
@@ -1024,7 +1042,7 @@ export const KotakAnalysisView: React.FC<{
   );
 };
 
-const UPIAppsView: React.FC<{
+const UPIAppsView: React.FC<{ 
   setCurrentView: (view: View) => void;
 }> = ({ setCurrentView }) => {
   const upiApps = [
@@ -1105,7 +1123,7 @@ const UPIAppsView: React.FC<{
     <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="p-4 flex items-center gap-3">
-        <button
+        <button 
           onClick={() => setCurrentView('home')}
           className="text-white hover:text-zinc-300 transition-colors"
         >
@@ -1118,7 +1136,7 @@ const UPIAppsView: React.FC<{
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4">
           {upiApps.map((app) => (
-            <div
+            <div 
               key={app.name}
               className="group bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800/50 hover:bg-zinc-800/80 transition-all duration-300"
             >
@@ -1131,7 +1149,7 @@ const UPIAppsView: React.FC<{
                       <span className={`text-[${app.color}] text-[7px] font-bold leading-none mt-0.5`}>tm</span>
                     </div>
                   ) : (
-                    <div
+                    <div 
                       className="w-full h-full flex items-center justify-center"
                       style={{ backgroundColor: app.color }}
                     >
@@ -1152,7 +1170,7 @@ const UPIAppsView: React.FC<{
   );
 };
 
-const BanksView: React.FC<{
+const BanksView: React.FC<{ 
   setCurrentView: (view: View) => void;
 }> = ({ setCurrentView }) => {
   const banks = [
@@ -1232,7 +1250,7 @@ const BanksView: React.FC<{
     <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="p-4 flex items-center gap-3">
-        <button
+        <button 
           onClick={() => setCurrentView('home')}
           className="text-white hover:text-zinc-300 transition-colors"
         >
@@ -1245,13 +1263,13 @@ const BanksView: React.FC<{
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4">
           {banks.map((bank) => (
-            <div
+            <div 
               key={bank.shortName}
               className="group bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800/50 hover:bg-zinc-800/80 transition-all duration-300"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden">
-                  <div
+                  <div 
                     className="w-full h-full flex items-center justify-center"
                     style={{ backgroundColor: bank.color }}
                   >

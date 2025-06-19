@@ -755,40 +755,63 @@ export const PhonePeAnalysisView: React.FC<{
           </div>
         );
       case 'results':
-        if (!analysisResults) return null;
-        return (
-          <div className="p-4 space-y-4">
-            <h2 className="text-xl font-bold text-white text-center">Analysis Results</h2>
-            {analysisResults.chartData ? (
-              <div className="bg-[#1C1C1E] rounded-2xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
-                <div style={{ height: '300px' }}>
-                  <Chart data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                </div>
-              </div>
-            ) : (
-              <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
-                <p className="text-zinc-400">No category data to display.</p>
-              </div>
-            )}
+        if (!analysisResults) {
+          return <div>Error: Analysis results are not available.</div>
+        }
 
-            {/* Summary */}
-            <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
-              <div>
+        const { summary, transactions, categoryBreakdown, chartData } = analysisResults
+
+        return (
+          <div className="p-4 bg-black text-white">
+            <button onClick={() => setCurrentView('home')} className="mb-4 text-white">
+              <ArrowLeftIcon className="h-6 w-6" />
+            </button>
+            <h2 className="text-xl font-bold mb-4">Analysis Complete</h2>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-center">
+              <div className="bg-zinc-800 p-4 rounded-lg">
                 <p className="text-sm text-zinc-400">Total Received</p>
-                <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
-                  </div>
-              <div>
-                <p className="text-sm text-zinc-400">Total Spent</p>
-                <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-500">₹{summary.totalReceived.toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-zinc-800 p-4 rounded-lg">
+                <p className="text-sm text-zinc-400">Total Sent</p>
+                <p className="text-2xl font-bold text-red-500">₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</p>
+              </div>
+              <div className="bg-zinc-800 p-4 rounded-lg col-span-2 md:col-span-1">
+                <p className="text-sm text-zinc-400">Total Transactions</p>
+                <p className="text-2xl font-bold">{summary.totalTransactions}</p>
               </div>
             </div>
 
-            {/* Recent Transactions */}
-            <div className="bg-[#1C1C1E] rounded-2xl p-4">
+            {/* Charts for Spending Breakdown */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-zinc-800 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold mb-2 text-center">Pie Chart</h4>
+                  <div style={{ height: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    {chartData && chartData.labels.length > 0 ? (
+                      <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }} />
+                    ) : <p>No spending data to display.</p>}
+                  </div>
+                </div>
+                <div className="bg-zinc-800 p-4 rounded-lg">
+                  <h4 className="text-md font-semibold mb-2 text-center">Bar Chart</h4>
+                   <div style={{ height: '300px' }}>
+                    {chartData && chartData.labels.length > 0 ? (
+                      <Bar data={chartData} options={{ maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }} />
+                    ) : <p>No spending data to display.</p>}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Transaction List */}
+            <div>
               <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
               <div className="space-y-3">
-                {analysisResults.transactions.slice(0, 5).map((t, i) => (
+                {transactions.slice(0, 5).map((t, i) => (
                   <div key={i} className="flex items-center justify-between">
                     <div>
                       <p className="text-white">{t.description}</p>
@@ -801,7 +824,7 @@ export const PhonePeAnalysisView: React.FC<{
                 ))}
               </div>
             </div>
-              </div>
+          </div>
         );
       default:
         return null;
@@ -927,7 +950,7 @@ export const KotakAnalysisView: React.FC<{
                 ))}
               </div>
             </div>
-          </div>
+              </div>
         );
       default:
         return null;

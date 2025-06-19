@@ -2,9 +2,9 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 import uvicorn
-from statement_parser import StatementParser
-from kotak_parser import KotakParser
-from unlock_pdf import unlock_pdf
+from .statement_parser import StatementParser
+from .kotak_parser import KotakParser
+from .unlock_pdf import unlock_pdf
 import io
 import os
 import tempfile

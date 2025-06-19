@@ -6,7 +6,6 @@ import Image from 'next/image'
 // import { createClient } from '@supabase/supabase-js'
 import { UPIApp, UPI_APPS } from '../constants/upiApps'
 import UPIAppGrid from './UPIAppGrid'
-import { Star } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import {
   Chart as ChartJS,
@@ -981,11 +980,9 @@ export const KotakAnalysisView: React.FC<{
   );
 };
 
-const UPIAppsView: React.FC<{ 
+const UPIAppsView: React.FC<{
   setCurrentView: (view: View) => void;
-  favorites: Set<string>;
-  toggleFavorite: (appName: string) => void;
-}> = ({ setCurrentView, favorites, toggleFavorite }) => {
+}> = ({ setCurrentView }) => {
   const upiApps = [
     {
       name: 'PhonePe',
@@ -1064,7 +1061,7 @@ const UPIAppsView: React.FC<{
     <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="p-4 flex items-center gap-3">
-        <button 
+        <button
           onClick={() => setCurrentView('home')}
           className="text-white hover:text-zinc-300 transition-colors"
         >
@@ -1077,7 +1074,7 @@ const UPIAppsView: React.FC<{
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4">
           {upiApps.map((app) => (
-            <div 
+            <div
               key={app.name}
               className="group bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800/50 hover:bg-zinc-800/80 transition-all duration-300"
             >
@@ -1090,7 +1087,7 @@ const UPIAppsView: React.FC<{
                       <span className={`text-[${app.color}] text-[7px] font-bold leading-none mt-0.5`}>tm</span>
                     </div>
                   ) : (
-                    <div 
+                    <div
                       className="w-full h-full flex items-center justify-center"
                       style={{ backgroundColor: app.color }}
                     >
@@ -1102,15 +1099,6 @@ const UPIAppsView: React.FC<{
                   <h3 className="text-white font-medium">{app.name}</h3>
                   <p className="text-sm text-zinc-400 mt-0.5">{app.description}</p>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(app.name);
-                  }}
-                  className="text-zinc-500 hover:text-white transition-colors"
-                >
-                  <Star className={`w-5 h-5 ${favorites.has(app.name) ? 'fill-white text-white' : ''}`} />
-                </button>
               </div>
             </div>
           ))}
@@ -1120,11 +1108,9 @@ const UPIAppsView: React.FC<{
   );
 };
 
-const BanksView: React.FC<{ 
+const BanksView: React.FC<{
   setCurrentView: (view: View) => void;
-  favorites: Set<string>;
-  toggleFavorite: (appName: string) => void;
-}> = ({ setCurrentView, favorites, toggleFavorite }) => {
+}> = ({ setCurrentView }) => {
   const banks = [
     {
       name: 'State Bank of India',
@@ -1202,7 +1188,7 @@ const BanksView: React.FC<{
     <div className="min-h-screen bg-black">
       {/* Header */}
       <div className="p-4 flex items-center gap-3">
-        <button 
+        <button
           onClick={() => setCurrentView('home')}
           className="text-white hover:text-zinc-300 transition-colors"
         >
@@ -1215,13 +1201,13 @@ const BanksView: React.FC<{
       <div className="p-4">
         <div className="grid grid-cols-1 gap-4">
           {banks.map((bank) => (
-            <div 
+            <div
               key={bank.shortName}
               className="group bg-zinc-900/80 p-4 rounded-2xl border border-zinc-800/50 hover:bg-zinc-800/80 transition-all duration-300"
             >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center overflow-hidden">
-                  <div 
+                  <div
                     className="w-full h-full flex items-center justify-center"
                     style={{ backgroundColor: bank.color }}
                   >
@@ -1232,15 +1218,6 @@ const BanksView: React.FC<{
                   <h3 className="text-white font-medium">{bank.name}</h3>
                   <p className="text-sm text-zinc-400 mt-0.5">{bank.description}</p>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(bank.name);
-                  }}
-                  className="text-zinc-500 hover:text-white transition-colors"
-                >
-                  <Star className={`w-5 h-5 ${favorites.has(bank.name) ? 'fill-white text-white' : ''}`} />
-                </button>
               </div>
             </div>
           ))}
@@ -1503,7 +1480,7 @@ export default function StatementAnalysis({
               case 'more-upi-apps':
                 return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;
               case 'more-banks':
-                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+                return <BanksView setCurrentView={setCurrentView} />;
               case 'settings':
                 return <SettingsView setCurrentView={setCurrentView} setIsSearchOpen={setIsSearchOpen} profile={profile} onLogout={() => setCurrentView('home')} />;
               case 'account-settings':
@@ -1514,9 +1491,9 @@ export default function StatementAnalysis({
               case 'refer-and-and-earn':
                 return <ReferAndEarnView setCurrentView={setCurrentView} />;
               case 'banks':
-                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+                return <BanksView setCurrentView={setCurrentView} />;
               case 'upi-apps':
-                return <UPIAppsView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+                return <UPIAppsView setCurrentView={setCurrentView} />;
               default:
                 return <HomeView 
                   setCurrentView={setCurrentView} 

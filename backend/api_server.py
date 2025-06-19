@@ -53,7 +53,7 @@ async def analyze_statement(
         else:
             raise HTTPException(status_code=400, detail="Unsupported platform")
 
-        df = parser.parse()
+        df, page_count = parser.parse()
 
         # Check if DataFrame is empty or None
         if df is None or df.empty:
@@ -120,7 +120,7 @@ async def analyze_statement(
                 "totalTransactions": len(transactions)
             },
             "detailedCategoryBreakdown": detailed_category_breakdown,
-            "pageCount": 0,
+            "pageCount": page_count,
         }
     except Exception as e:
         import traceback

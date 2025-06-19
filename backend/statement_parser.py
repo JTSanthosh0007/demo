@@ -34,8 +34,16 @@ class StatementParser:
         """
         logger.info(f"Starting PDF parsing for {self.filename}")
         transactions = []
+        page_count = 0
         
         try:
+            self.file.seek(0)
+            
+            # Use pdfplumber to get page count first
+            with pdfplumber.open(self.file) as pdf:
+                page_count = len(pdf.pages)
+            
+            # Reset file pointer after reading for page count
             self.file.seek(0)
             
             # Heuristic to select the right parser based on filename
@@ -55,13 +63,14 @@ class StatementParser:
                 final_df = final_df[~final_df['description'].str.contains('balance', case=False, na=False)]
                 final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
                 logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
-                return final_df
+                return final_df, page_count
             else:
                 logger.error("All parsing methods failed. No transactions could be extracted.")
-                return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
+                return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
         except Exception as e:
             logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
-            return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
+            # Return page count even if parsing fails
+            return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
 
     def _parse_phonepe_pdf(self):
         """Dedicated parser for PhonePe statements with a robust regex."""
@@ -346,7 +355,7 @@ def main():
     try:
         with open(args.file_path, 'rb') as f:
             statement_parser = StatementParser(f, Path(args.file_path).name)
-            df = statement_parser.parse()
+            df, page_count = statement_parser.parse()
         
         if not df.empty:
             df['date'] = df['date'].dt.strftime('%Y-%m-%d %H:%M:%S')

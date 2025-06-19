@@ -567,10 +567,10 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
     const labels = detailedCategoryBreakdown.map(item => item.category);
     const data = detailedCategoryBreakdown.map(item => item.amount);
     
-    // A more modern and vibrant color palette
+    // A more modern and vibrant color palette with gradients for bar chart
     const coolColors = [
-      '#16a34a', '#2563eb', '#ca8a04', '#dc2626', '#9333ea',
-      '#db2777', '#ea580c', '#65a30d', '#0891b2', '#be185d'
+      '#2dd4bf', '#38bdf8', '#facc15', '#fb923c', '#c084fc', 
+      '#f472b6', '#818cf8', '#a3e635', '#22d3ee', '#f87171'
     ];
 
     return {
@@ -580,9 +580,10 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           label: 'Amount Spent',
           data,
           backgroundColor: coolColors,
-          borderColor: '#18181b', // zinc-900
-          borderWidth: 3,
-          hoverOffset: 8
+          borderColor: '#18181b',
+          borderWidth: 4,
+          hoverOffset: 15,
+          cutout: '60%', // Makes the pie chart a doughnut chart
         },
       ],
     };
@@ -593,24 +594,29 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
     plugins: {
       legend: {
         display: true,
-        position: 'bottom' as const,
+        position: 'right' as const,
         labels: {
           color: '#a1a1aa', // zinc-400
-          padding: 20,
+          padding: 25,
+          boxWidth: 15,
           font: {
-            size: 12
-          }
+            size: 14
+          },
+          usePointStyle: true,
         }
       },
       tooltip: {
-        backgroundColor: '#27272a', // zinc-800
+        enabled: true,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#ffffff',
-        bodyColor: '#d4d4d8', // zinc-300
-        padding: 12,
-        cornerRadius: 8,
+        bodyColor: '#d4d4d8',
+        padding: 15,
+        cornerRadius: 10,
+        borderColor: '#3f3f46',
+        borderWidth: 1,
         callbacks: {
           label: function(context: any) {
-            let label = context.dataset.label || '';
+            let label = context.label || '';
             if (label) {
               label += ': ';
             }
@@ -621,6 +627,33 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           }
         }
       }
+    }
+  };
+
+  const barChartOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: '#27272a' // zinc-800
+        },
+        ticks: {
+          color: '#a1a1aa' // zinc-400
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          color: '#a1a1aa' // zinc-400
+        }
+      }
+    },
+    plugins: {
+        ...chartOptions.plugins,
+        legend: { display: false },
     }
   };
 
@@ -694,11 +727,11 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 </button>
             </div>
         </div>
-        <div className="h-64 flex justify-center items-center p-2">
+        <div className="h-72 flex justify-center items-center p-2">
           {chartType === 'pie' ? (
             <Chart data={chartData} options={chartOptions} />
           ) : (
-            <Bar data={chartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: { display: false }}}} />
+            <Bar data={chartData} options={barChartOptions} />
           )}
         </div>
       </div>
@@ -784,6 +817,8 @@ export const PhonePeAnalysisView: React.FC<{
   handleDragOver: (event: React.DragEvent) => void;
   handleDrop: (event: React.DragEvent) => Promise<void>;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  errorMessage: string | null;
+  setErrorMessage: (message: string | null) => void;
 }> = ({
   setCurrentView,
   selectedFile,
@@ -792,30 +827,27 @@ export const PhonePeAnalysisView: React.FC<{
   handleFileSelect,
   handleDragOver,
   handleDrop,
-  fileInputRef
+  fileInputRef,
+  errorMessage,
+  setErrorMessage
 }) => {
   const renderContent = () => {
     switch (analysisState) {
       case 'upload':
         return (
-          <div 
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-            className="p-4"
-          >
+          <div className="p-4">
             <label 
               htmlFor="file-upload-phonepe"
               className="border-2 border-dashed border-zinc-600 rounded-2xl p-8 text-center cursor-pointer hover:bg-zinc-800 transition-colors block"
             >
               <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-zinc-400" />
               <p className="mt-2 text-white">Drag & drop your PhonePe statement here</p>
-              <p className="text-zinc-600 text-sm mb-4">or</p>
-              <label
-                htmlFor="file-upload-phonepe"
-                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
-              >
-                Browse Files
-              </label>
+                <p className="text-zinc-600 text-sm mb-4">or</p>
+               <span
+                 className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
+                >
+                  Browse Files
+               </span>
               <input
                 type="file"
                 id="file-upload-phonepe"
@@ -825,6 +857,12 @@ export const PhonePeAnalysisView: React.FC<{
                 accept=".pdf"
               />
             </label>
+            {errorMessage && (
+              <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">
+                <p className="text-red-400 text-sm">{errorMessage}</p>
+                <button onClick={() => setErrorMessage(null)} className="text-xs text-zinc-400 mt-1 underline">Dismiss</button>
+              </div>
+            )}
           </div>
         );
       case 'analyzing':
@@ -867,6 +905,8 @@ export const KotakAnalysisView: React.FC<{
   handleDragOver: (event: React.DragEvent) => void;
   handleDrop: (event: React.DragEvent) => Promise<void>;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  errorMessage: string | null;
+  setErrorMessage: (message: string | null) => void;
 }> = ({
   setCurrentView,
   selectedFile,
@@ -875,7 +915,9 @@ export const KotakAnalysisView: React.FC<{
   handleFileSelect,
   handleDragOver,
   handleDrop,
-  fileInputRef
+  fileInputRef,
+  errorMessage,
+  setErrorMessage
 }) => {
   const renderContent = () => {
     switch (analysisState) {
@@ -901,6 +943,12 @@ export const KotakAnalysisView: React.FC<{
                 accept=".pdf"
               />
             </label>
+            {errorMessage && (
+              <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">
+                <p className="text-red-400 text-sm">{errorMessage}</p>
+                <button onClick={() => setErrorMessage(null)} className="text-xs text-zinc-400 mt-1 underline">Dismiss</button>
+              </div>
+            )}
           </div>
         );
       case 'analyzing':
@@ -1337,6 +1385,7 @@ export default function StatementAnalysis({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [analysisState, setAnalysisState] = useState<AnalysisState>('upload');
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -1356,7 +1405,7 @@ export default function StatementAnalysis({
       await analyzeStatement(file);
     } else {
       console.log('No file selected or file is not a PDF.');
-      alert('Please select a valid PDF file');
+      setErrorMessage('Please select a valid PDF file.');
       setAnalysisState('upload');
     }
   };
@@ -1377,12 +1426,13 @@ export default function StatementAnalysis({
       await analyzeStatement(file);
     } else {
       console.log('Invalid file dropped.');
-      alert('Please drop a valid PDF file');
+      setErrorMessage('Please drop a valid PDF file.');
       setAnalysisState('upload');
     }
   };
 
   const analyzeStatement = async (file: File) => {
+    setErrorMessage(null); // Clear previous errors
     setAnalysisState('analyzing');
     const formData = new FormData();
     formData.append('file', file);
@@ -1419,7 +1469,8 @@ export default function StatementAnalysis({
       setAnalysisState('results');
     } catch (error) {
       console.error('Analysis API call failed:', error);
-      alert(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorDetail = error instanceof Error ? error.message : 'An unknown error occurred. Please try again.';
+      setErrorMessage(`Analysis failed: ${errorDetail}`);
       setAnalysisState('upload');
     }
   };
@@ -1446,6 +1497,8 @@ export default function StatementAnalysis({
           handleDragOver={handleDragOver}
           handleDrop={handleDrop}
           fileInputRef={fileInputRef}
+          errorMessage={errorMessage}
+          setErrorMessage={setErrorMessage}
         />;
       case 'more-upi-apps':
         return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;

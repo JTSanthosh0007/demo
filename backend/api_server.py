@@ -61,7 +61,7 @@ async def analyze_statement(
                 "transactions": [],
                 "totalSpent": 0,
                 "totalReceived": 0,
-                "categoryBreakdown": {},
+                "detailedCategoryBreakdown": [],
                 "pageCount": 0
             }
 
@@ -78,29 +78,36 @@ async def analyze_statement(
         credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
         debit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] < 0)
 
-        # Calculate category breakdown
-        category_breakdown = {}
+        # Calculate detailed category breakdown
+        category_details = {}
         for t in transactions:
             if t.get('amount') and t['amount'] < 0:  # Only consider spending
                 category = t.get('category', 'Uncategorized')
-                category_breakdown[category] = category_breakdown.get(category, 0) + t['amount']
-        
-        # Prepare chart data for the frontend
-        chart_labels = list(category_breakdown.keys())
-        chart_values = list(category_breakdown.values())
+                if category not in category_details:
+                    category_details[category] = {
+                        "amount": 0,
+                        "count": 0,
+                        "transactions": []
+                    }
+                category_details[category]["amount"] += t['amount']
+                category_details[category]["count"] += 1
+                category_details[category]["transactions"].append(t)
 
-        chart_data = {
-            "labels": chart_labels,
-            "datasets": [{
-                "label": "Spending by Category",
-                "data": chart_values,
-                "backgroundColor": [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
-                ],
-                "borderWidth": 1
-            }]
-        }
+        detailed_category_breakdown = []
+        if total_spent < 0:
+            for category, details in category_details.items():
+                amount = abs(details['amount'])
+                percentage = (amount / abs(total_spent)) * 100
+                detailed_category_breakdown.append({
+                    "category": category,
+                    "amount": amount,
+                    "count": details['count'],
+                    "percentage": round(percentage, 2),
+                    "transactions": sorted(details['transactions'], key=lambda x: x['date'], reverse=True)
+                })
+
+        # Sort categories by amount spent
+        detailed_category_breakdown.sort(key=lambda x: x['amount'], reverse=True)
 
         return {
             "transactions": transactions,
@@ -112,9 +119,8 @@ async def analyze_statement(
                 "debitCount": debit_count,
                 "totalTransactions": len(transactions)
             },
-            "categoryBreakdown": category_breakdown,
+            "detailedCategoryBreakdown": detailed_category_breakdown,
             "pageCount": 0,
-            "chartData": chart_data
         }
     except Exception as e:
         import traceback

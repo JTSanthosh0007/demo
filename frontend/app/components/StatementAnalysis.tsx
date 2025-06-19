@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState, useEffect, useCallback, useRef, memo, Suspense } from 'react'
-import { HomeIcon, ChartBarIcon, FolderIcon, Cog6ToothIcon, PlusIcon, ArrowLeftIcon, DocumentTextIcon, ArrowUpTrayIcon, DocumentIcon, WalletIcon } from '@heroicons/react/24/outline'
+import { HomeIcon, ChartBarIcon, FolderIcon, Cog6ToothIcon, PlusIcon, ArrowLeftIcon, DocumentTextIcon, ArrowUpTrayIcon, DocumentIcon, WalletIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline'
 import Image from 'next/image'
 // import { createClient } from '@supabase/supabase-js'
 import { UPIApp, UPI_APPS } from '../constants/upiApps'
@@ -76,17 +76,20 @@ type AnalysisData = {
   }[]
 }
 
-export type View = 'home' | 'settings'  | 'phonepe-analysis' | 'more-upi-apps' | 'more-banks' | 'profile' | 'notifications' | 'report-issue' | 'signin' | 'banks' | 'upi-apps' | 'account-settings' | 'refer-and-and-earn' | 'favorites' | 'history';
+export type View = 'home' | 'settings'  | 'phonepe-analysis' | 'kotak-analysis' | 'more-upi-apps' | 'more-banks' | 'profile' | 'notifications' | 'report-issue' | 'signin' | 'banks' | 'upi-apps' | 'account-settings' | 'refer-and-and-earn' | 'favorites' | 'history';
 
 export type AnalysisState = 'upload' | 'analyzing' | 'results'
 
+interface DetailedCategory {
+  category: string;
+  amount: number;
+  count: number;
+  percentage: number;
+  transactions: Transaction[];
+}
+
 export interface AnalysisResult {
-  transactions: {
-    date: string;
-    amount: number;
-    description: string;
-    category: string;
-  }[];
+  transactions: Transaction[];
   summary: {
     totalReceived: number;
     totalSpent: number;
@@ -95,22 +98,8 @@ export interface AnalysisResult {
     debitCount: number;
     totalTransactions: number;
   };
-  categoryBreakdown: Record<string, number>;
-  accounts?: {
-    accountName: string;
-    bankLogo?: string;
-    accountNumber: string;
-    paymentsMade: {
-      count: number;
-      total: number;
-    };
-    paymentsReceived: {
-      count: number;
-      total: number;
-    };
-  }[];
+  detailedCategoryBreakdown: DetailedCategory[];
   pageCount: number;
-  chartData?: any;
 }
 
 // Add profile interface at the top with other interfaces
@@ -187,7 +176,7 @@ const HomeView: React.FC<HomeViewProps> = ({
 
           {/* Kotak Mahindra Bank */}
           <div 
-            onClick={() => setCurrentView('home')}
+            onClick={() => setCurrentView('kotak-analysis')}
             className="bg-[#1C1C1E] rounded-2xl p-4 cursor-pointer hover:bg-zinc-800/80 transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -403,166 +392,51 @@ const SettingsView: React.FC<SettingsViewProps> = ({ setCurrentView, setIsSearch
       window.open('https://santhoshjt.netlify.app/', '_blank');
     };
 
+    const handleAboutClick = () => {
+      // Implement about page navigation
+    };
+
     return (
-      <div className="p-4">
-        <h1 className="text-2xl font-bold text-white mb-6">Settings</h1>
-        <div className="bg-gray-800 p-4 rounded-lg mb-4">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center">
-              <span className="text-xl text-white">
-                {profile?.full_name?.charAt(0) || 'U'}
-              </span>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-white">{profile?.full_name || 'User'}</h2>
-              <p className="text-gray-400">{profile?.email || 'No email set'}</p>
-            </div>
-          </div>
+      <div className="p-4 space-y-4">
+        <h2 className="text-xl font-bold text-white">Settings</h2>
+        
+        <div className="bg-zinc-800 rounded-lg p-4">
+          <button onClick={() => setCurrentView('account-settings')} className="w-full text-left text-white">Account</button>
+          <hr className="border-zinc-700 my-2" />
+          <button onClick={handlePrivacyClick} className="w-full text-left text-white">Privacy & Security</button>
+          <hr className="border-zinc-700 my-2" />
+          <button onClick={() => setCurrentView('notifications-settings')} className="w-full text-left text-white">Notifications</button>
         </div>
-        <div className="space-y-2">
-          <button 
-            onClick={() => setCurrentView('account-settings' as View)}
-            className="w-full bg-gray-800 p-4 rounded-lg text-left text-white"
-          >
-            Account Settings
-          </button>
-          <button 
-            onClick={handlePrivacyClick}
-            className="w-full bg-gray-800 p-4 rounded-lg text-left text-white flex items-center justify-between"
-          >
-            <span>Privacy</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-            </svg>
-          </button>
-          <button 
-            onClick={() => setCurrentView('refer-and-and-earn' as View)}
-            className="w-full bg-gray-800 p-4 rounded-lg text-left text-white flex items-center justify-between"
-          >
-            <span>Refer & Earn</span>
-            <span className="text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded">New</span>
-          </button>
-          <button 
-            onClick={handleHelpSupportClick}
-            className="w-full bg-gray-800 p-4 rounded-lg text-left text-white flex items-center justify-between"
-          >
-            <span>Help & Support</span>
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-              <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-            </svg>
-          </button>
-          <button 
-            onClick={onLogout}
-            className="w-full bg-red-600 p-4 rounded-lg text-center text-white mt-4"
-          >
-            Log Out
-          </button>
+
+        <div className="bg-zinc-800 rounded-lg p-4">
+          <button onClick={handleHelpSupportClick} className="w-full text-left text-white">Help & Support</button>
+          <hr className="border-zinc-700 my-2" />
+          <button onClick={handleAboutClick} className="w-full text-left text-white">About</button>
         </div>
+
+        <button 
+          onClick={onLogout}
+          className="w-full bg-red-600 text-white py-2 rounded-lg"
+        >
+          Logout
+        </button>
       </div>
     );
 };
 
 const FavoritesView: React.FC<FavoritesViewProps & { favorites: Set<string>; toggleFavorite: (appName: string) => void }> = ({ setCurrentView, setIsSearchOpen, favorites, toggleFavorite }) => {
+    const favoriteApps = UPI_APPS.filter(app => favorites.has(app.name));
+
     return (
-    <div className="p-4 pb-20 bg-black">
-      <h1 className="text-xl font-medium mb-8 flex items-center">
-        <span className="text-white font-semibold tracking-tight">Favorite Apps</span>
-      </h1>
-
-      {favorites.size === 0 ? (
-        <div className="bg-zinc-900/80 rounded-3xl p-10 text-center border border-zinc-800/50 backdrop-blur-sm">
-          <Star className="w-10 h-10 text-zinc-700 mx-auto mb-4" />
-          <p className="text-zinc-300 font-medium text-sm">No favorites yet</p>
-          <p className="text-zinc-500 text-xs mt-2 tracking-wide">Star your favorite apps to see them here</p>
+        <div className="p-4">
+            <h2 className="text-xl font-bold text-white mb-4">Favorites</h2>
+            {favoriteApps.length > 0 ? (
+                <UPIAppGrid apps={favoriteApps} favorites={favorites} toggleFavorite={toggleFavorite} />
+            ) : (
+                <p className="text-zinc-400">No favorites added yet.</p>
+            )}
         </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-4">
-          {Array.from(favorites).map((appName) => {
-            let appConfig;
-            switch (appName) {
-              case 'PhonePe':
-                appConfig = {
-                  logo: (
-                    <div className="w-8 h-8 bg-[#5f259f] rounded-full flex items-center justify-center">
-                      <span className="text-lg font-bold text-white">Pe</span>
-      </div>
-                  ),
-                  description: 'Digital payments platform'
-                };
-                break;
-              case 'Paytm':
-                appConfig = {
-                  logo: (
-                    <div className="flex flex-col items-center">
-                      <span className="text-[#00B9F1] text-sm font-bold leading-none">pay</span>
-                      <span className="text-[#00B9F1] text-[8px] font-bold leading-none mt-0.5">tm</span>
-    </div>
-                  ),
-                  description: 'Digital payments and banking'
-                };
-                break;
-              case 'Canara Bank':
-                appConfig = {
-                  logo: (
-                    <div className="flex flex-col items-center justify-center">
-                      <span className="text-[#00573F] text-sm font-bold leading-none">CAN</span>
-                      <span className="text-[#00573F] text-[8px] font-bold leading-none mt-0.5">BANK</span>
-                    </div>
-                  ),
-                  description: 'Major public sector bank'
-                };
-                break;
-              case 'Kotak Bank':
-                appConfig = {
-                  logo: (
-                    <div className="flex flex-col items-center">
-                      <span className="text-[#EF3E23] text-sm font-bold leading-none">KOTAK</span>
-                      <span className="text-[#EF3E23] text-[8px] font-bold leading-none mt-0.5">BANK</span>
-                    </div>
-                  ),
-                  description: 'Private sector banking'
-                };
-                break;
-              default:
-                appConfig = {
-                  logo: <span className="text-lg font-bold">{appName[0]}</span>,
-                  description: 'Financial service'
-                };
-            }
-
-  return (
-              <div key={appName} className="group cursor-pointer relative">
-                <div className="relative bg-zinc-900/80 p-5 rounded-3xl border border-zinc-800/50 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:bg-zinc-800/80">
-          <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite(appName);
-                    }}
-                    className="absolute top-3 right-3 z-20 text-white hover:text-zinc-200 transition-colors duration-300"
-                  >
-                    <Star className="w-4 h-4 fill-white" />
-          </button>
-                  <div className="flex items-center gap-4">
-                    <div className="relative">
-                      <div className="w-12 h-12 bg-white rounded-2xl overflow-hidden flex items-center justify-center group-hover:scale-105 transition-all duration-300">
-                        {appConfig.logo}
-        </div>
-      </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-white mb-1">{appName}</h3>
-                      <p className="text-xs text-zinc-500">{appConfig.description}</p>
-                    </div>
-                    </div>
-                  </div>
-                    </div>
-            );
-          })}
-          </div>
-        )}
-    </div>
-  );
+    );
 };
 
 const ProfileView = memo(({ onBack, userId }: { onBack: () => void; userId: string }) => {
@@ -693,6 +567,125 @@ const SearchModal = memo(({ isOpen, onClose, searchQuery, setSearchQuery, groupe
   );
 });
 
+const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (view: View) => void }> = ({ analysisResults, setCurrentView }) => {
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+
+  const { summary, transactions, detailedCategoryBreakdown } = analysisResults
+  const recentTransactions = [...transactions].reverse().slice(0, 5)
+
+  const categoryColors: { [key: string]: string } = {
+    bills: 'bg-blue-500',
+    entertainment: 'bg-red-500',
+    food: 'bg-green-500',
+    shopping: 'bg-pink-500',
+    travel: 'bg-blue-400',
+    transfer: 'bg-orange-500',
+    health: 'bg-yellow-500',
+    education: 'bg-indigo-500',
+    default: 'bg-gray-500'
+  }
+
+  const toggleCategory = (category: string) => {
+    setExpandedCategory(expandedCategory === category ? null : category)
+  }
+
+  return (
+    <div className="p-4 bg-black text-white min-h-screen">
+      <button onClick={() => setCurrentView('home')} className="mb-4 text-white">
+        <ArrowLeftIcon className="h-6 w-6" />
+      </button>
+      <h2 className="text-xl font-bold mb-4 text-center">Analysis Results</h2>
+
+      {/* Transaction Summary */}
+      <div className="bg-zinc-800 rounded-xl p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-4">Transaction Summary</h3>
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="text-center">
+            <p className="text-sm text-zinc-400">Total Received (CR)</p>
+            <p className="text-xl font-bold text-green-500">₹{summary.totalReceived.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-zinc-500">{summary.creditCount} transactions</p>
+          </div>
+          <div className="text-center">
+            <p className="text-sm text-zinc-400">Total Spent (DR)</p>
+            <p className="text-xl font-bold text-red-500">₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</p>
+            <p className="text-xs text-zinc-500">{summary.debitCount} transactions</p>
+          </div>
+        </div>
+        <div className="bg-zinc-900 rounded-lg p-3 text-center">
+          <p className="text-sm text-zinc-400">Net Balance</p>
+          <p className={`text-xl font-bold ${summary.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            ₹{summary.balance.toLocaleString('en-IN')}
+          </p>
+          <div className="flex justify-around text-xs mt-1">
+            <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')}</span>
+            <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</span>
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
+        </div>
+      </div>
+
+      {/* Detailed Category Breakdown */}
+      <div className="bg-zinc-800 rounded-xl p-4 mb-6">
+        <h3 className="text-lg font-semibold mb-4">Detailed Category Breakdown</h3>
+        <div className="space-y-3">
+          {detailedCategoryBreakdown.map((item) => (
+            <div key={item.category} className="bg-zinc-900 rounded-lg p-3">
+              <div onClick={() => toggleCategory(item.category)} className="flex items-center justify-between cursor-pointer">
+                <div className="flex items-center gap-3">
+                  <span className={`w-3 h-3 rounded-full ${categoryColors[item.category.toLowerCase()] || categoryColors.default}`}></span>
+                  <p className="font-semibold">{item.category}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <p className="font-bold">₹{item.amount.toLocaleString('en-IN')}</p>
+                  {expandedCategory === item.category ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}
+                </div>
+              </div>
+              <div className="text-sm text-zinc-400 mt-2">
+                <p>Portion of spending: {item.percentage}%</p>
+                <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                  <div className={`${categoryColors[item.category.toLowerCase()] || categoryColors.default} h-1.5 rounded-full`} style={{ width: `${item.percentage}%` }}></div>
+                </div>
+                <p className="mt-1">{item.count} transactions</p>
+              </div>
+              {expandedCategory === item.category && (
+                <div className="mt-4 space-y-2">
+                  {item.transactions.map((t, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm border-t border-zinc-700 pt-2">
+                      <div>
+                        <p className="font-medium text-white">{t.description}</p>
+                        <p className="text-xs text-zinc-500">{new Date(t.date).toLocaleDateString('en-GB')}</p>
+                      </div>
+                      <p className="font-semibold text-red-500">₹{Math.abs(t.amount).toLocaleString('en-IN')}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="bg-zinc-800 rounded-xl p-4">
+        <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
+        <div className="space-y-3">
+          {recentTransactions.map((t, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-white">{t.description}</p>
+                <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString('en-GB')}</p>
+              </div>
+              <p className={`text-sm font-semibold ${t.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {t.amount >= 0 ? `₹${t.amount.toLocaleString()}` : `-₹${Math.abs(t.amount).toLocaleString()}`}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export const PhonePeAnalysisView: React.FC<{ 
   setCurrentView: (view: View) => void;
   selectedFile: File | null;
@@ -759,87 +752,7 @@ export const PhonePeAnalysisView: React.FC<{
         if (!analysisResults) {
           return <div>Error: Analysis results are not available.</div>
         }
-
-        const { summary, transactions, categoryBreakdown, chartData } = analysisResults
-
-        return (
-          <div className="p-4 bg-black text-white">
-            <button onClick={() => setCurrentView('home')} className="mb-4 text-white">
-              <ArrowLeftIcon className="h-6 w-6" />
-            </button>
-            <h2 className="text-xl font-bold mb-4">Analysis Complete</h2>
-
-            {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
-              <div className="bg-zinc-800 p-4 rounded-lg">
-                <p className="text-sm text-zinc-400">Total Received</p>
-                <p className="text-2xl font-bold text-green-500">₹{summary.totalReceived.toLocaleString('en-IN')}</p>
-                <p className="text-xs text-zinc-500 mt-1">{summary.creditCount} transactions</p>
-              </div>
-              <div className="bg-zinc-800 p-4 rounded-lg">
-                <p className="text-sm text-zinc-400">Total Sent</p>
-                <p className="text-2xl font-bold text-red-500">₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</p>
-                <p className="text-xs text-zinc-500 mt-1">{summary.debitCount} transactions</p>
-              </div>
-            </div>
-
-            {/* Charts for Spending Breakdown */}
-            <div className="bg-zinc-800 p-4 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold mb-4 text-center">Spending by Category</h3>
-              
-              {/* Chart Type Toggle */}
-              <div className="flex justify-center mb-4">
-                <div className="flex rounded-md bg-zinc-700 p-1">
-                  <button 
-                    onClick={() => setChartType('pie')}
-                    className={`px-3 py-1 text-sm font-medium rounded ${chartType === 'pie' ? 'bg-purple-600 text-white' : 'text-zinc-300'}`}
-                  >
-                    Pie
-                  </button>
-                  <button 
-                    onClick={() => setChartType('bar')}
-                    className={`px-3 py-1 text-sm font-medium rounded ${chartType === 'bar' ? 'bg-purple-600 text-white' : 'text-zinc-300'}`}
-                  >
-                    Bar
-                  </button>
-                </div>
-              </div>
-              
-              <div style={{ height: '350px' }}>
-                {chartData && chartData.labels.length > 0 ? (
-                  <>
-                    {chartType === 'pie' && (
-                      <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }} />
-                      </div>
-                    )}
-                    {chartType === 'bar' && (
-                      <Bar data={chartData} options={{ maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }} />
-                    )}
-                  </>
-                ) : <p className="text-center text-zinc-400">No spending data to display.</p>}
-              </div>
-            </div>
-
-            {/* Transaction List */}
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
-              <div className="space-y-3">
-                {transactions.slice(0, 5).map((t, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white">{t.description}</p>
-                      <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString()}</p>
-                    </div>
-                    <p className={`font-semibold ${t.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      ₹{Math.abs(t.amount).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        );
+        return <ResultsView analysisResults={analysisResults} setCurrentView={setCurrentView} />
       default:
         return null;
     }
@@ -887,85 +800,38 @@ export const KotakAnalysisView: React.FC<{
       case 'upload':
         return (
           <div 
-            className="flex flex-col items-center justify-center h-[calc(100vh-150px)] border-2 border-dashed border-zinc-700 rounded-3xl m-4"
-            onDragOver={handleDragOver}
+            onDragOver={handleDragOver} 
             onDrop={handleDrop}
+            className="p-4 space-y-4"
           >
-            <ArrowUpTrayIcon className="w-12 h-12 text-zinc-500 mb-4" />
-            <p className="text-zinc-400 mb-2">Drag & drop your Kotak statement here</p>
-            <p className="text-zinc-600 text-sm mb-4">or</p>
-            <button
+            <div 
               onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors"
+              className="border-2 border-dashed border-zinc-600 rounded-2xl p-8 text-center cursor-pointer hover:bg-zinc-800 transition-colors"
             >
-              Browse Files
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              className="hidden"
-              accept=".pdf"
-            />
+              <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-zinc-400" />
+              <p className="mt-2 text-white">Drag & drop your Kotak statement or click to select</p>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileSelect} 
+                className="hidden" 
+                accept=".pdf" 
+              />
+            </div>
           </div>
         );
       case 'analyzing':
         return (
-          <div className="flex flex-col items-center justify-center h-[calc(100vh-150px)]">
+          <div className="flex flex-col items-center justify-center p-8">
             <LoadingSpinner />
-            <p className="text-zinc-400 mt-4">Analyzing your statement...</p>
-            <p className="text-zinc-500 text-sm">This may take a moment.</p>
+            <p className="mt-4 text-white">Analyzing your statement...</p>
           </div>
         );
       case 'results':
-        if (!analysisResults) return null;
-        return (
-          <div className="p-4 space-y-4">
-            <h2 className="text-xl font-bold text-white text-center">Analysis Results</h2>
-            {analysisResults.chartData ? (
-              <div className="bg-[#1C1C1E] rounded-2xl p-4">
-                <h3 className="text-lg font-semibold text-white mb-2">Spending by Category</h3>
-                <div style={{ height: '300px' }}>
-                  <Chart data={analysisResults.chartData} options={{ maintainAspectRatio: false }} />
-                </div>
-              </div>
-            ) : (
-              <div className="bg-[#1C1C1E] rounded-2xl p-4 text-center">
-                <p className="text-zinc-400">No category data to display.</p>
-              </div>
-            )}
-
-            {/* Summary */}
-            <div className="bg-[#1C1C1E] rounded-2xl p-4 grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-zinc-400">Total Received</p>
-                <p className="text-lg font-semibold text-green-400">₹{analysisResults.summary.totalReceived.toLocaleString()}</p>
-                  </div>
-              <div>
-                <p className="text-sm text-zinc-400">Total Spent</p>
-                <p className="text-lg font-semibold text-red-400">₹{Math.abs(analysisResults.summary.totalSpent).toLocaleString()}</p>
-              </div>
-            </div>
-
-            {/* Recent Transactions */}
-            <div className="bg-[#1C1C1E] rounded-2xl p-4">
-              <h3 className="text-lg font-semibold text-white mb-2">Recent Transactions</h3>
-              <div className="space-y-3">
-                {analysisResults.transactions.slice(0, 5).map((t, i) => (
-                  <div key={i} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-white">{t.description}</p>
-                      <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString()}</p>
-                    </div>
-                    <p className={`font-semibold ${t.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      ₹{Math.abs(t.amount).toLocaleString()}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-              </div>
-        );
+        if (!analysisResults) {
+          return <div>Error: Analysis results are not available.</div>
+        }
+        return <ResultsView analysisResults={analysisResults} setCurrentView={setCurrentView} />
       default:
         return null;
     }
@@ -1381,13 +1247,13 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
   );
 };
 
-export default function StatementAnalysis({ 
-  data = { transactions: [], totalReceived: 0, totalSpent: 0, categoryBreakdown: {} },
+export default function StatementAnalysis({
+  data = { transactions: [], totalReceived: 0, totalSpent: 0 },
   favorites = new Set<string>(),
   toggleFavorite = (appName: string) => {},
   navigate = (path: string) => {}
 }: { 
-  data?: AnalysisData;
+  data?: Omit<AnalysisData, 'categoryBreakdown' | 'accounts'>;
   favorites?: Set<string>;
   toggleFavorite?: (appName: string) => void;
   navigate?: (path: string) => void;
@@ -1410,8 +1276,8 @@ export default function StatementAnalysis({
   // Memoize expensive computations
   const processedData = useMemo(() => {
     // Move any expensive data processing here
-    return data;
-  }, [data]);
+    return { transactions: [], totalReceived: 0, totalSpent: 0, categoryBreakdown: {} };
+  }, []);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

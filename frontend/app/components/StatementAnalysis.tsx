@@ -714,6 +714,7 @@ export const PhonePeAnalysisView: React.FC<{
 }) => {
   const [selectedChartType, setSelectedChartType] = useState<'pie' | 'bar'>('pie');
   const [mounted, setMounted] = useState(false);
+  const [chartType, setChartType] = useState('pie');
 
   useEffect(() => {
     setMounted(true);
@@ -769,41 +770,54 @@ export const PhonePeAnalysisView: React.FC<{
             <h2 className="text-xl font-bold mb-4">Analysis Complete</h2>
 
             {/* Summary Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 text-center">
               <div className="bg-zinc-800 p-4 rounded-lg">
                 <p className="text-sm text-zinc-400">Total Received</p>
                 <p className="text-2xl font-bold text-green-500">₹{summary.totalReceived.toLocaleString('en-IN')}</p>
+                <p className="text-xs text-zinc-500 mt-1">{summary.creditCount} transactions</p>
               </div>
               <div className="bg-zinc-800 p-4 rounded-lg">
                 <p className="text-sm text-zinc-400">Total Sent</p>
                 <p className="text-2xl font-bold text-red-500">₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</p>
-              </div>
-              <div className="bg-zinc-800 p-4 rounded-lg col-span-2 md:col-span-1">
-                <p className="text-sm text-zinc-400">Total Transactions</p>
-                <p className="text-2xl font-bold">{summary.totalTransactions}</p>
+                <p className="text-xs text-zinc-500 mt-1">{summary.debitCount} transactions</p>
               </div>
             </div>
 
             {/* Charts for Spending Breakdown */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-4">Spending by Category</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-zinc-800 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold mb-2 text-center">Pie Chart</h4>
-                  <div style={{ height: '300px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                    {chartData && chartData.labels.length > 0 ? (
-                      <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }} />
-                    ) : <p>No spending data to display.</p>}
-                  </div>
+            <div className="bg-zinc-800 p-4 rounded-lg mb-6">
+              <h3 className="text-lg font-semibold mb-4 text-center">Spending by Category</h3>
+              
+              {/* Chart Type Toggle */}
+              <div className="flex justify-center mb-4">
+                <div className="flex rounded-md bg-zinc-700 p-1">
+                  <button 
+                    onClick={() => setChartType('pie')}
+                    className={`px-3 py-1 text-sm font-medium rounded ${chartType === 'pie' ? 'bg-purple-600 text-white' : 'text-zinc-300'}`}
+                  >
+                    Pie
+                  </button>
+                  <button 
+                    onClick={() => setChartType('bar')}
+                    className={`px-3 py-1 text-sm font-medium rounded ${chartType === 'bar' ? 'bg-purple-600 text-white' : 'text-zinc-300'}`}
+                  >
+                    Bar
+                  </button>
                 </div>
-                <div className="bg-zinc-800 p-4 rounded-lg">
-                  <h4 className="text-md font-semibold mb-2 text-center">Bar Chart</h4>
-                   <div style={{ height: '300px' }}>
-                    {chartData && chartData.labels.length > 0 ? (
+              </div>
+              
+              <div style={{ height: '350px' }}>
+                {chartData && chartData.labels.length > 0 ? (
+                  <>
+                    {chartType === 'pie' && (
+                      <div style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }} />
+                      </div>
+                    )}
+                    {chartType === 'bar' && (
                       <Bar data={chartData} options={{ maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } }} />
-                    ) : <p>No spending data to display.</p>}
-                  </div>
-                </div>
+                    )}
+                  </>
+                ) : <p className="text-center text-zinc-400">No spending data to display.</p>}
               </div>
             </div>
 

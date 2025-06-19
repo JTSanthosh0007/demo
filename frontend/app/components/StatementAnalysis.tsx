@@ -696,22 +696,22 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
       {/* Transaction Summary */}
       <div className="bg-zinc-900/80 rounded-2xl p-6 mb-6 border border-zinc-800/50">
             <h3 className="text-lg font-semibold text-white mb-4">Transaction Summary</h3>
-            <div className="space-y-4">
+              <div className="space-y-4">
                 {/* Total Money In */}
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="bg-green-500/20 p-2 rounded-full">
                             <ArrowTrendingUpIcon className="h-5 w-5 text-green-400" />
-                        </div>
+                  </div>
                         <div>
                             <p className="text-white">Total Money In</p>
                             <p className="text-xs text-zinc-400">{summary.creditCount} transactions</p>
-                        </div>
+              </div>
                     </div>
                     <p className="text-green-400 font-semibold text-lg">
                         + ₹{summary.totalReceived.toLocaleString('en-IN')}
                     </p>
-                </div>
+            </div>
 
                 {/* Total Money Out */}
                 <div className="flex justify-between items-center">
@@ -719,11 +719,11 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                         <div className="bg-red-500/20 p-2 rounded-full">
                             <ArrowTrendingDownIcon className="h-5 w-5 text-red-400" />
                         </div>
-                        <div>
+                    <div>
                             <p className="text-white">Total Money Out</p>
                             <p className="text-xs text-zinc-400">{summary.debitCount} transactions</p>
-                        </div>
                     </div>
+                  </div>
                     <p className="text-red-400 font-semibold text-lg">
                         - ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}
                     </p>
@@ -738,8 +738,8 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                     <div className="text-center bg-zinc-800/50 rounded-lg p-2">
                         <p className="text-xs text-zinc-400">Highest Debit</p>
                         <p className="text-white font-medium">₹{Math.abs(summary.highestDebit ?? 0).toLocaleString('en-IN') ?? 'N/A'}</p>
-                    </div>
-                </div>
+              </div>
+            </div>
 
                 {/* Divider */}
                 <hr className="border-zinc-700/50 !my-6" />
@@ -750,7 +750,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                     <p className={`text-2xl font-bold ${summary.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         ₹{summary.balance.toLocaleString('en-IN')}
                     </p>
-                </div>
+              </div>
             </div>
         </div>
       
@@ -792,7 +792,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 <div className="flex items-center gap-3">
                   <span className={`w-3 h-3 rounded-full ${categoryColors[item.category.toLowerCase()] || categoryColors.default}`}></span>
                   <p className="font-semibold">{item.category}</p>
-              </div>
+                </div>
                 <div className="flex items-center gap-4">
                   <p className="font-bold">₹{item.amount.toLocaleString('en-IN')}</p>
                   {expandedCategory === item.category ? <ChevronUpIcon className="w-5 h-5" /> : <ChevronDownIcon className="w-5 h-5" />}

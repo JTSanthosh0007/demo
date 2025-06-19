@@ -153,9 +153,9 @@ const HomeView: React.FC<HomeViewProps> = ({
     return (
     <div className="min-h-screen bg-black">
       {/* Available Apps Section */}
-      <div className="px-4">
+      <div className="p-4 md:p-6">
         <h2 className="text-base font-medium text-white mb-4">Available Apps</h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {/* PhonePe */}
           <div 
             onClick={() => setCurrentView('phonepe-analysis')}
@@ -214,7 +214,7 @@ const HomeView: React.FC<HomeViewProps> = ({
       </div>
 
       {/* View All Buttons */}
-      <div className="px-4 mt-6 grid grid-cols-2 gap-3">
+      <div className="px-4 md:px-6 mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* View All Banks */}
         <div
           onClick={() => navigate('/banks')}
@@ -1561,7 +1561,7 @@ export default function StatementAnalysis({
   }
 
   return (
-    <div className="min-h-screen w-full max-w-4xl mx-auto">
+    <div className="min-h-screen w-full max-w-md mx-auto">
       {renderCurrentView()}
       <SearchModal
         isOpen={isSearchOpen}

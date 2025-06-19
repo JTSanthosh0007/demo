@@ -10,7 +10,9 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Statement Analyzer',
-  description: 'Analyze your bank statements and track your spending',
+  description: 'Analyze your bank and UPI statements with ease.',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  themeColor: '#000000',
 }
 
 export default function RootLayout({

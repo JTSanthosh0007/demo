@@ -3,8 +3,10 @@ services:
     name: backend
     env: python
     buildCommand: "pip install -r backend/requirements.txt"
-    startCommand: "gunicorn --bind 0.0.0.0:$PORT --workers 2 --worker-class uvicorn.workers.UvicornWorker --preload backend.api_server:app"
+    startCommand: "uvicorn backend.api_server:app --host 0.0.0.0 --port $PORT"
     healthCheckPath: /
     envVars:
+      - key: PYTHONPATH
+        value: .
       - key: PYTHON_VERSION
         value: 3.10.0 

@@ -1351,9 +1351,11 @@ export default function StatementAnalysis({
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && file.type === 'application/pdf') {
+      console.log(`File selected: ${file.name}, type: ${currentView}`);
       setSelectedFile(file);
       await analyzeStatement(file);
     } else {
+      console.log('No file selected or file is not a PDF.');
       alert('Please select a valid PDF file');
       setAnalysisState('upload');
     }
@@ -1370,9 +1372,11 @@ export default function StatementAnalysis({
     
     const file = event.dataTransfer.files?.[0];
     if (file && file.type === 'application/pdf') {
+      console.log(`File dropped: ${file.name}, type: ${currentView}`);
       setSelectedFile(file);
       await analyzeStatement(file);
     } else {
+      console.log('Invalid file dropped.');
       alert('Please drop a valid PDF file');
       setAnalysisState('upload');
     }
@@ -1393,10 +1397,14 @@ export default function StatementAnalysis({
         platform = 'phonepe'
     }
     formData.append('platform', platform);
+    console.log(`Analyzing statement for platform: ${platform}`);
 
     try {
       const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
-      const response = await fetch(`${backendUrl}/analyze`, {
+      const endpoint = `${backendUrl}/analyze`;
+      console.log(`Sending analysis request to: ${endpoint}`);
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,
       });
@@ -1410,7 +1418,7 @@ export default function StatementAnalysis({
       setAnalysisResults(results);
       setAnalysisState('results');
     } catch (error) {
-      console.error(error);
+      console.error('Analysis API call failed:', error);
       alert(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setAnalysisState('upload');
     }

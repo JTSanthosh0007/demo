@@ -546,9 +546,43 @@ const SearchModal = memo(({ isOpen, onClose, searchQuery, setSearchQuery, groupe
 
 const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (view: View) => void }> = ({ analysisResults, setCurrentView }) => {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
+  const [chartType, setChartType] = useState<'pie' | 'bar'>('pie');
 
-  const { summary, transactions, detailedCategoryBreakdown } = analysisResults
+  const { summary, transactions, detailedCategoryBreakdown, pageCount } = analysisResults
   const recentTransactions = [...transactions].reverse().slice(0, 5)
+
+  const dateRange = useMemo(() => {
+    if (transactions.length === 0) return null;
+    const dates = transactions.map(t => new Date(t.date));
+    const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+    const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' };
+    return {
+      start: minDate.toLocaleDateString('en-GB', options),
+      end: maxDate.toLocaleDateString('en-GB', options)
+    };
+  }, [transactions]);
+
+  const chartData = useMemo(() => {
+    const labels = detailedCategoryBreakdown.map(item => item.category);
+    const data = detailedCategoryBreakdown.map(item => item.amount);
+    
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Amount Spent',
+          data,
+          backgroundColor: [
+            '#4A90E2', '#F5A623', '#F8E71C', '#8B572A', '#7ED321',
+            '#417505', '#BD10E0', '#9013FE', '#4A4A4A', '#D0021B'
+          ],
+          borderColor: '#1C1C1E',
+          borderWidth: 2,
+        },
+      ],
+    };
+  }, [detailedCategoryBreakdown]);
 
   const categoryColors: { [key: string]: string } = {
     bills: 'bg-blue-500',
@@ -571,7 +605,19 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
       <button onClick={() => setCurrentView('home')} className="mb-4 text-white">
         <ArrowLeftIcon className="h-6 w-6" />
       </button>
-      <h2 className="text-xl font-bold mb-4 text-center">Analysis Results</h2>
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold">Analysis Results</h2>
+        {dateRange && (
+          <p className="text-sm text-zinc-400">
+            UPI Statement from {dateRange.start} to {dateRange.end}
+          </p>
+        )}
+        {pageCount > 0 && (
+            <p className="text-xs text-zinc-500 mt-1">
+                Based on {pageCount} page(s) in the PDF
+            </p>
+        )}
+      </div>
 
       {/* Transaction Summary */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
@@ -593,11 +639,35 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           <p className={`text-xl font-bold ${summary.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
             ₹{summary.balance.toLocaleString('en-IN')}
           </p>
-          <div className="flex justify-around text-xs mt-1">
-            <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')}</span>
-            <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</span>
-          </div>
           <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
+        </div>
+      </div>
+      
+      {/* Spending Analysis Charts */}
+      <div className="bg-zinc-800 rounded-xl p-4 mb-6">
+        <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Spending Analysis</h3>
+            <div className="flex space-x-2 bg-zinc-900 p-1 rounded-lg">
+                <button 
+                    onClick={() => setChartType('pie')}
+                    className={`px-3 py-1 text-sm rounded-md ${chartType === 'pie' ? 'bg-blue-600 text-white' : 'text-zinc-400'}`}
+                >
+                    Pie
+                </button>
+                <button 
+                    onClick={() => setChartType('bar')}
+                    className={`px-3 py-1 text-sm rounded-md ${chartType === 'bar' ? 'bg-blue-600 text-white' : 'text-zinc-400'}`}
+                >
+                    Bar
+                </button>
+            </div>
+        </div>
+        <div className="h-64 flex justify-center items-center">
+          {chartType === 'pie' ? (
+            <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right' } } }} />
+          ) : (
+            <Bar data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+          )}
         </div>
       </div>
 
@@ -659,6 +729,16 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           ))}
         </div>
       </div>
+      
+      {/* Note Section */}
+      <div className="bg-zinc-800 rounded-xl p-4 mt-6">
+        <h3 className="text-md font-semibold text-white mb-2">Note:</h3>
+        <ul className="list-disc list-inside text-xs text-zinc-400 space-y-1">
+            <li>Self transfer payments are not included in the total money paid and money received calculations.</li>
+            <li>Payments that you might have hidden on payment history page will not be included in this statement.</li>
+        </ul>
+      </div>
+
     </div>
   )
 }

@@ -49,7 +49,8 @@ class StatementParser:
             # Heuristic to select the right parser based on filename
             if 'phonepe' in self.filename.lower():
                 logger.info("PhonePe statement detected. Using PhonePe-specific parser.")
-                return self._parse_phonepe_pdf()
+                df = self._parse_phonepe_pdf()
+                return df, page_count
 
             # Default generic parser
             with pdfplumber.open(self.file) as pdf:

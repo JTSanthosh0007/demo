@@ -81,7 +81,7 @@ export type View = 'home' | 'settings' | 'phonepe-analysis' | 'kotak-analysis' |
 export type AnalysisState = 'upload' | 'analyzing' | 'results'
 
 interface DetailedCategory {
-  category: string;
+    category: string;
   amount: number;
   count: number;
   percentage: number;
@@ -383,20 +383,20 @@ const SettingsView: React.FC<SettingsViewProps> = ({ setCurrentView, setIsSearch
           <button onClick={handlePrivacyClick} className="w-full text-left text-white">Privacy & Security</button>
           <hr className="border-zinc-700 my-2" />
           <button onClick={() => setCurrentView('notifications-settings')} className="w-full text-left text-white">Notifications</button>
-        </div>
+            </div>
 
         <div className="bg-zinc-800 rounded-lg p-4">
           <button onClick={handleHelpSupportClick} className="w-full text-left text-white">Help & Support</button>
           <hr className="border-zinc-700 my-2" />
           <button onClick={handleAboutClick} className="w-full text-left text-white">About</button>
-        </div>
+            </div>
 
-        <button 
-          onClick={onLogout}
+          <button 
+            onClick={onLogout}
           className="w-full bg-red-600 text-white py-2 rounded-lg"
-        >
+          >
           Logout
-        </button>
+          </button>
       </div>
     );
 };
@@ -404,16 +404,16 @@ const SettingsView: React.FC<SettingsViewProps> = ({ setCurrentView, setIsSearch
 const FavoritesView: React.FC<FavoritesViewProps & { favorites: Set<string>; toggleFavorite: (appName: string) => void }> = ({ setCurrentView, setIsSearchOpen, favorites, toggleFavorite }) => {
     const favoriteApps = UPI_APPS.filter(app => favorites.has(app.name));
 
-    return (
+  return (
         <div className="p-4">
             <h2 className="text-xl font-bold text-white mb-4">Favorites</h2>
             {favoriteApps.length > 0 ? (
                 <UPIAppGrid apps={favoriteApps} favorites={favorites} toggleFavorite={toggleFavorite} />
             ) : (
                 <p className="text-zinc-400">No favorites added yet.</p>
-            )}
-        </div>
-    );
+        )}
+    </div>
+  );
 };
 
 const ProfileView = memo(({ onBack, userId }: { onBack: () => void; userId: string }) => {
@@ -590,22 +590,22 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
   }, [detailedCategoryBreakdown]);
 
   const chartOptions = {
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
+                          maintainAspectRatio: false,
+                          plugins: {
+                            legend: {
         display: true,
         position: 'right' as const,
-        labels: {
+                              labels: {
           color: '#a1a1aa', // zinc-400
           padding: 25,
           boxWidth: 15,
-          font: {
+                                font: {
             size: 14
-          },
+                                },
           usePointStyle: true,
-        }
-      },
-      tooltip: {
+                              }
+                            },
+                            tooltip: {
         enabled: true,
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#ffffff',
@@ -614,7 +614,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
         cornerRadius: 10,
         borderColor: '#3f3f46',
         borderWidth: 1,
-        callbacks: {
+                              callbacks: {
           label: function(context: any) {
             let label = context.label || '';
             if (label) {
@@ -632,21 +632,21 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
 
   const barChartOptions = {
     ...chartOptions,
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                grid: {
           color: '#27272a' // zinc-800
-        },
-        ticks: {
+                              },
+                                 ticks: {
           color: '#a1a1aa' // zinc-400
         }
-      },
+                                },
       x: {
-        grid: {
+                                grid: {
           display: false
         },
-        ticks: {
+                            ticks: {
           color: '#a1a1aa' // zinc-400
         }
       }
@@ -690,7 +690,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 Based on {pageCount} page(s) in the PDF
             </p>
         )}
-      </div>
+                  </div>
 
       {/* Transaction Summary */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
@@ -703,9 +703,9 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           <div className="flex justify-around text-xs mt-1">
             <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')} ({summary.creditCount} trans)</span>
             <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')} ({summary.debitCount} trans)</span>
-          </div>
+                </div>
           <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
-        </div>
+              </div>
       </div>
       
       {/* Spending Analysis Charts */}
@@ -725,7 +725,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 >
                     Bar
                 </button>
-            </div>
+                  </div>
         </div>
         <div className="h-72 flex justify-center items-center p-2">
           {chartType === 'pie' ? (
@@ -733,8 +733,8 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           ) : (
             <Bar data={chartData} options={barChartOptions} />
           )}
-        </div>
-      </div>
+              </div>
+            </div>
 
       {/* Detailed Category Breakdown */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
@@ -763,19 +763,19 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 <div className="mt-4 space-y-2">
                   {item.transactions.map((t, i) => (
                     <div key={i} className="flex justify-between items-center text-sm border-t border-zinc-700 pt-2">
-                      <div>
+                    <div>
                         <p className="font-medium text-white">{t.description}</p>
                         <p className="text-xs text-zinc-500">{new Date(t.date).toLocaleDateString('en-GB')}</p>
-                      </div>
-                      <p className="font-semibold text-red-500">₹{Math.abs(t.amount).toLocaleString('en-IN')}</p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                      <p className="font-semibold text-red-500">₹{Math.abs(t.amount).toLocaleString('en-IN')}</p>
+                  </div>
+                ))}
+              </div>
+                )}
+              </div>
           ))}
-        </div>
-      </div>
+              </div>
+            </div>
 
       {/* Recent Transactions */}
       <div className="bg-zinc-800 rounded-xl p-4">
@@ -783,17 +783,17 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
         <div className="space-y-3">
           {recentTransactions.map((t, i) => (
             <div key={i} className="flex items-center justify-between">
-              <div>
+                <div>
                 <p className="text-sm font-medium text-white">{t.description}</p>
                 <p className="text-xs text-zinc-400">{new Date(t.date).toLocaleDateString('en-GB')}</p>
-              </div>
+                </div>
               <p className={`text-sm font-semibold ${t.amount >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                 {t.amount >= 0 ? `₹${t.amount.toLocaleString()}` : `-₹${Math.abs(t.amount).toLocaleString()}`}
               </p>
-            </div>
+              </div>
           ))}
-        </div>
-      </div>
+            </div>
+          </div>
       
       {/* Note Section */}
       <div className="bg-zinc-800 rounded-xl p-4 mt-6">
@@ -802,7 +802,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
             <li>Self transfer payments are not included in the total money paid and money received calculations.</li>
             <li>Payments that you might have hidden on payment history page will not be included in this statement.</li>
         </ul>
-      </div>
+                </div>
 
     </div>
   )
@@ -848,22 +848,22 @@ export const PhonePeAnalysisView: React.FC<{
                 >
                   Browse Files
                </span>
-              <input
-                type="file"
+                  <input
+                    type="file"
                 id="file-upload-phonepe"
                 ref={fileInputRef}
                 onChange={handleFileSelect}
-                className="hidden"
-                accept=".pdf"
+                    className="hidden"
+                    accept=".pdf"
               />
             </label>
             {errorMessage && (
               <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">
                 <p className="text-red-400 text-sm">{errorMessage}</p>
                 <button onClick={() => setErrorMessage(null)} className="text-xs text-zinc-400 mt-1 underline">Dismiss</button>
-              </div>
+                </div>
             )}
-          </div>
+              </div>
         );
       case 'analyzing':
         return (
@@ -924,8 +924,8 @@ export const KotakAnalysisView: React.FC<{
       case 'upload':
         return (
           <div 
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDrop={handleDrop}
             className="p-4"
           >
             <label 
@@ -934,22 +934,22 @@ export const KotakAnalysisView: React.FC<{
             >
               <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-zinc-400" />
               <p className="mt-2 text-white">Drag & drop your Kotak statement or click to select</p>
-              <input
-                type="file"
+                  <input
+                    type="file"
                 id="file-upload-kotak"
                 ref={fileInputRef} 
                 onChange={handleFileSelect} 
-                className="hidden"
-                accept=".pdf"
+                    className="hidden"
+                    accept=".pdf"
               />
             </label>
             {errorMessage && (
               <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">
                 <p className="text-red-400 text-sm">{errorMessage}</p>
                 <button onClick={() => setErrorMessage(null)} className="text-xs text-zinc-400 mt-1 underline">Dismiss</button>
-              </div>
+                </div>
             )}
-          </div>
+              </div>
         );
       case 'analyzing':
         return (
@@ -1369,7 +1369,7 @@ const ReferAndEarnView: React.FC<{ setCurrentView: (view: View) => void }> = ({ 
   );
 };
 
-export default function StatementAnalysis({
+export default function StatementAnalysis({ 
   favorites = new Set<string>(),
   toggleFavorite = (appName: string) => {},
   navigate = (path: string) => {}
@@ -1388,7 +1388,7 @@ export default function StatementAnalysis({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mounted, setMounted] = useState(false);
-
+  
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -1433,10 +1433,10 @@ export default function StatementAnalysis({
 
   const analyzeStatement = async (file: File) => {
     setErrorMessage(null); // Clear previous errors
-    setAnalysisState('analyzing');
-    const formData = new FormData();
-    formData.append('file', file);
-    
+      setAnalysisState('analyzing');
+      const formData = new FormData();
+      formData.append('file', file);
+
     let platform = '';
     if (currentView === 'phonepe-analysis') {
       platform = 'phonepe';
@@ -1476,56 +1476,56 @@ export default function StatementAnalysis({
   };
 
   const renderCurrentView = () => {
-    switch (currentView) {
-      case 'home':
-        return <HomeView 
-          setCurrentView={setCurrentView} 
-          setIsSearchOpen={setIsSearchOpen} 
-          favorites={favorites} 
-          toggleFavorite={toggleFavorite} 
-          navigate={navigate}
-        />;
-      case 'phonepe-analysis':
+            switch (currentView) {
+              case 'home':
+                return <HomeView 
+                  setCurrentView={setCurrentView} 
+                  setIsSearchOpen={setIsSearchOpen} 
+                  favorites={favorites} 
+                  toggleFavorite={toggleFavorite} 
+                  navigate={navigate}
+                />;
+              case 'phonepe-analysis':
       case 'kotak-analysis':
         const ViewComponent = currentView === 'phonepe-analysis' ? PhonePeAnalysisView : KotakAnalysisView;
         return <ViewComponent
-          setCurrentView={setCurrentView}
-          selectedFile={selectedFile}
-          analysisState={analysisState}
-          analysisResults={analysisResults}
-          handleFileSelect={handleFileSelect}
-          handleDragOver={handleDragOver}
-          handleDrop={handleDrop}
-          fileInputRef={fileInputRef}
+                  setCurrentView={setCurrentView}
+                  selectedFile={selectedFile}
+                  analysisState={analysisState}
+                  analysisResults={analysisResults}
+                  handleFileSelect={handleFileSelect}
+                  handleDragOver={handleDragOver}
+                  handleDrop={handleDrop}
+                  fileInputRef={fileInputRef}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
-        />;
-      case 'more-upi-apps':
-        return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;
-      case 'more-banks':
-        return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-      case 'settings':
-        return <SettingsView setCurrentView={setCurrentView} setIsSearchOpen={setIsSearchOpen} profile={profile} onLogout={() => setCurrentView('home')} />;
-      case 'account-settings':
-        return <AccountSettingsView
-          setCurrentView={setCurrentView}
+                />;
+              case 'more-upi-apps':
+                return <MoreUpiAppsView setCurrentView={setCurrentView} toggleSearchModal={toggleSearchModal} />;
+              case 'more-banks':
+                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+              case 'settings':
+                return <SettingsView setCurrentView={setCurrentView} setIsSearchOpen={setIsSearchOpen} profile={profile} onLogout={() => setCurrentView('home')} />;
+              case 'account-settings':
+                return <AccountSettingsView
+                  setCurrentView={setCurrentView}
           profile={profile}
-        />;
-      case 'refer-and-and-earn':
-        return <ReferAndEarnView setCurrentView={setCurrentView} />;
-      case 'banks':
-        return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-      case 'upi-apps':
-        return <UPIAppsView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
-      default:
-        return <HomeView 
-          setCurrentView={setCurrentView} 
-          setIsSearchOpen={setIsSearchOpen} 
-          favorites={favorites} 
-          toggleFavorite={toggleFavorite} 
-          navigate={navigate}
-        />;
-    }
+                />;
+              case 'refer-and-and-earn':
+                return <ReferAndEarnView setCurrentView={setCurrentView} />;
+              case 'banks':
+                return <BanksView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+              case 'upi-apps':
+                return <UPIAppsView setCurrentView={setCurrentView} favorites={favorites} toggleFavorite={toggleFavorite} />;
+              default:
+                return <HomeView 
+                  setCurrentView={setCurrentView} 
+                  setIsSearchOpen={setIsSearchOpen} 
+                  favorites={favorites} 
+                  toggleFavorite={toggleFavorite} 
+                  navigate={navigate}
+                />;
+            }
   }
 
   if (!mounted) {
@@ -1541,11 +1541,11 @@ export default function StatementAnalysis({
       {renderCurrentView()}
       <SearchModal
         isOpen={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
+          onClose={() => setIsSearchOpen(false)}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        groupedResults={{}}
-      />
+          groupedResults={{}}
+        />
     </div>
   );
 }

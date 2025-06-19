@@ -77,6 +77,10 @@ async def analyze_statement(
         total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
         credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
         debit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] < 0)
+        
+        all_amounts = [t['amount'] for t in transactions if t.get('amount') is not None]
+        highest_transaction = max(all_amounts) if all_amounts else 0
+        lowest_transaction = min(all_amounts) if all_amounts else 0
 
         # Calculate detailed category breakdown
         category_details = {}
@@ -117,7 +121,9 @@ async def analyze_statement(
                 "balance": total_received + abs(total_spent),
                 "creditCount": credit_count,
                 "debitCount": debit_count,
-                "totalTransactions": len(transactions)
+                "totalTransactions": len(transactions),
+                "highestTransaction": highest_transaction,
+                "lowestTransaction": lowest_transaction,
             },
             "detailedCategoryBreakdown": detailed_category_breakdown,
             "pageCount": page_count,

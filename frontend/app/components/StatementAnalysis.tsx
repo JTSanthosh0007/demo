@@ -96,9 +96,11 @@ export interface AnalysisResult {
     creditCount: number;
     debitCount: number;
     totalTransactions: number;
+    highestTransaction?: number;
+    lowestTransaction?: number;
   };
   detailedCategoryBreakdown: DetailedCategory[];
-  pageCount: number;
+  pageCount?: number;
 }
 
 // Add profile interface at the top with other interfaces
@@ -684,9 +686,9 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
             UPI Statement from {dateRange.start} to {dateRange.end}
           </p>
         )}
-        {pageCount > 0 && (
+        {analysisResults?.pageCount && analysisResults.pageCount > 0 && (
             <p className="text-xs text-zinc-500 mt-1">
-                Based on {pageCount} page(s) in the PDF
+                Based on {analysisResults.pageCount} page(s) in the PDF
             </p>
         )}
                   </div>
@@ -705,6 +707,16 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 </div>
           <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
               </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 text-center text-sm">
+            <div className="bg-zinc-900 p-2 rounded-lg">
+                <p className="text-zinc-400">Highest Credit</p>
+                <p className="font-semibold text-green-500">₹{summary.highestTransaction?.toLocaleString('en-IN') ?? 'N/A'}</p>
+            </div>
+            <div className="bg-zinc-900 p-2 rounded-lg">
+                <p className="text-zinc-400">Highest Debit</p>
+                <p className="font-semibold text-red-500">₹{Math.abs(summary.lowestTransaction ?? 0).toLocaleString('en-IN') ?? 'N/A'}</p>
+            </div>
+        </div>
       </div>
       
       {/* Spending Analysis Charts */}

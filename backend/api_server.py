@@ -125,7 +125,13 @@ async def analyze_statement(
     except Exception as e:
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error processing file: {str(e)}")
+        # Check if the error is due to a password-protected PDF
+        if "permission" in str(e).lower() or "encrypted" in str(e).lower():
+            raise HTTPException(
+                status_code=400, 
+                detail="The provided Kotak PDF statement appears to be password-protected. Please unlock it first using the PDF Unlocker tool."
+            )
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while parsing the file: {str(e)}")
 
 @app.post("/unlock-pdf")
 async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form(...)):

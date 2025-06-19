@@ -639,6 +639,10 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           <p className={`text-xl font-bold ${summary.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
             ₹{summary.balance.toLocaleString('en-IN')}
           </p>
+          <div className="flex justify-around text-xs mt-1">
+            <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')}</span>
+            <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</span>
+          </div>
           <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
         </div>
       </div>
@@ -1299,6 +1303,11 @@ export default function StatementAnalysis({
   const [analysisState, setAnalysisState] = useState<AnalysisState>('upload');
   const [analysisResults, setAnalysisResults] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const toggleSearchModal = useCallback(() => {
     setIsSearchOpen(prev => !prev);
@@ -1421,6 +1430,14 @@ export default function StatementAnalysis({
           navigate={navigate}
         />;
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen w-full max-w-4xl mx-auto flex items-center justify-center bg-black">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (

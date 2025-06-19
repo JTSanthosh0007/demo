@@ -567,22 +567,62 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
     const labels = detailedCategoryBreakdown.map(item => item.category);
     const data = detailedCategoryBreakdown.map(item => item.amount);
     
+    // A more modern and vibrant color palette
+    const coolColors = [
+      '#16a34a', '#2563eb', '#ca8a04', '#dc2626', '#9333ea',
+      '#db2777', '#ea580c', '#65a30d', '#0891b2', '#be185d'
+    ];
+
     return {
       labels,
       datasets: [
         {
           label: 'Amount Spent',
           data,
-          backgroundColor: [
-            '#4A90E2', '#F5A623', '#F8E71C', '#8B572A', '#7ED321',
-            '#417505', '#BD10E0', '#9013FE', '#4A4A4A', '#D0021B'
-          ],
-          borderColor: '#1C1C1E',
-          borderWidth: 2,
+          backgroundColor: coolColors,
+          borderColor: '#18181b', // zinc-900
+          borderWidth: 3,
+          hoverOffset: 8
         },
       ],
     };
   }, [detailedCategoryBreakdown]);
+
+  const chartOptions = {
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom' as const,
+        labels: {
+          color: '#a1a1aa', // zinc-400
+          padding: 20,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        backgroundColor: '#27272a', // zinc-800
+        titleColor: '#ffffff',
+        bodyColor: '#d4d4d8', // zinc-300
+        padding: 12,
+        cornerRadius: 8,
+        callbacks: {
+          label: function(context: any) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed !== null) {
+              label += new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(context.raw);
+            }
+            return label;
+          }
+        }
+      }
+    }
+  };
 
   const categoryColors: { [key: string]: string } = {
     bills: 'bg-blue-500',
@@ -654,11 +694,11 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                 </button>
             </div>
         </div>
-        <div className="h-64 flex justify-center items-center">
+        <div className="h-64 flex justify-center items-center p-2">
           {chartType === 'pie' ? (
-            <Chart data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right' } } }} />
+            <Chart data={chartData} options={chartOptions} />
           ) : (
-            <Bar data={chartData} options={{ maintainAspectRatio: false, plugins: { legend: { display: false } } }} />
+            <Bar data={chartData} options={{...chartOptions, plugins: {...chartOptions.plugins, legend: { display: false }}}} />
           )}
         </div>
       </div>
@@ -759,26 +799,32 @@ export const PhonePeAnalysisView: React.FC<{
       case 'upload':
         return (
           <div 
-            className="flex flex-col items-center justify-center h-[calc(100vh-150px)] border-2 border-dashed border-zinc-700 rounded-3xl m-4"
             onDragOver={handleDragOver}
             onDrop={handleDrop}
+            className="p-4"
           >
-            <ArrowUpTrayIcon className="w-12 h-12 text-zinc-500 mb-4" />
-            <p className="text-zinc-400 mb-2">Drag & drop your PhonePe statement here</p>
-            <p className="text-zinc-600 text-sm mb-4">or</p>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors"
+            <label 
+              htmlFor="file-upload-phonepe"
+              className="border-2 border-dashed border-zinc-600 rounded-2xl p-8 text-center cursor-pointer hover:bg-zinc-800 transition-colors block"
             >
-              Browse Files
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileSelect}
-              className="hidden"
-              accept=".pdf"
-            />
+              <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-zinc-400" />
+              <p className="mt-2 text-white">Drag & drop your PhonePe statement here</p>
+              <p className="text-zinc-600 text-sm mb-4">or</p>
+              <label
+                htmlFor="file-upload-phonepe"
+                className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-xl hover:bg-blue-700 transition-colors cursor-pointer"
+              >
+                Browse Files
+              </label>
+              <input
+                type="file"
+                id="file-upload-phonepe"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                accept=".pdf"
+              />
+            </label>
           </div>
         );
       case 'analyzing':
@@ -836,24 +882,25 @@ export const KotakAnalysisView: React.FC<{
       case 'upload':
         return (
           <div 
-            onDragOver={handleDragOver} 
+            onDragOver={handleDragOver}
             onDrop={handleDrop}
-            className="p-4 space-y-4"
+            className="p-4"
           >
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-600 rounded-2xl p-8 text-center cursor-pointer hover:bg-zinc-800 transition-colors"
+            <label 
+              htmlFor="file-upload-kotak"
+              className="border-2 border-dashed border-zinc-600 rounded-2xl p-8 text-center cursor-pointer hover:bg-zinc-800 transition-colors block"
             >
               <ArrowUpTrayIcon className="w-12 h-12 mx-auto text-zinc-400" />
               <p className="mt-2 text-white">Drag & drop your Kotak statement or click to select</p>
-              <input 
-                type="file" 
+              <input
+                type="file"
+                id="file-upload-kotak"
                 ref={fileInputRef} 
                 onChange={handleFileSelect} 
-                className="hidden" 
-                accept=".pdf" 
+                className="hidden"
+                accept=".pdf"
               />
-            </div>
+            </label>
           </div>
         );
       case 'analyzing':

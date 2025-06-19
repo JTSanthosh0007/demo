@@ -114,7 +114,7 @@ async def analyze_statement(
             "summary": {
                 "totalReceived": total_received,
                 "totalSpent": total_spent,
-                "balance": total_received + total_spent,
+                "balance": total_received + abs(total_spent),
                 "creditCount": credit_count,
                 "debitCount": debit_count,
                 "totalTransactions": len(transactions)

@@ -622,26 +622,14 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
       {/* Transaction Summary */}
       <div className="bg-zinc-800 rounded-xl p-4 mb-6">
         <h3 className="text-lg font-semibold mb-4">Transaction Summary</h3>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="text-center">
-            <p className="text-sm text-zinc-400">Total Received (CR)</p>
-            <p className="text-xl font-bold text-green-500">₹{summary.totalReceived.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-zinc-500">{summary.creditCount} transactions</p>
-          </div>
-          <div className="text-center">
-            <p className="text-sm text-zinc-400">Total Spent (DR)</p>
-            <p className="text-xl font-bold text-red-500">₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</p>
-            <p className="text-xs text-zinc-500">{summary.debitCount} transactions</p>
-          </div>
-        </div>
         <div className="bg-zinc-900 rounded-lg p-3 text-center">
           <p className="text-sm text-zinc-400">Total CR+DR</p>
           <p className={`text-xl font-bold ${summary.balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>
             ₹{summary.balance.toLocaleString('en-IN')}
           </p>
           <div className="flex justify-around text-xs mt-1">
-            <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')}</span>
-            <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')}</span>
+            <span className="text-green-500">CR: ₹{summary.totalReceived.toLocaleString('en-IN')} ({summary.creditCount} trans)</span>
+            <span className="text-red-500">DR: ₹{Math.abs(summary.totalSpent).toLocaleString('en-IN')} ({summary.debitCount} trans)</span>
           </div>
           <p className="text-xs text-zinc-500 mt-2">Total {summary.totalTransactions} transactions</p>
         </div>

@@ -16,6 +16,7 @@ class KotakParser:
     def parse(self):
         """Parse Kotak bank statement PDF"""
         doc = None
+        page_count = 0
         try:
             # Ensure the stream is at the beginning before reading
             self.file_obj.seek(0)
@@ -23,9 +24,10 @@ class KotakParser:
             # Open the PDF directly from the file-like object
             doc = fitz.open(stream=self.file_obj, filetype="pdf")
             all_extracted_text = []
+            page_count = len(doc)
             
             # Extract text from each page
-            for page_num in range(len(doc)):
+            for page_num in range(page_count):
                 page = doc[page_num]
                 text = page.get_text("text")
                 if text and text.strip():
@@ -51,10 +53,10 @@ class KotakParser:
                 df['date'] = pd.to_datetime(df['date'])
                 
                 logger.info(f"Successfully extracted {len(df)} transactions from Kotak statement.")
-                return df
+                return df, page_count
             else:
                 logger.error("No transactions could be extracted from Kotak statement.")
-                return pd.DataFrame(columns=['date', 'amount', 'description', 'category'])
+                return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
                 
         except Exception as e:
             logger.error(f"Error parsing Kotak PDF: {str(e)}")

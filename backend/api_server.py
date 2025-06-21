@@ -68,11 +68,11 @@ async def analyze_statement(
         # Convert date column to string to avoid JSON serialization issues
         if 'date' in df.columns:
             df['date'] = df['date'].astype(str)
-
-        # Convert to dictionary format
-        transactions = df.to_dict('records')
-
-        # Calculate summary statistics
+            
+            # Convert to dictionary format
+            transactions = df.to_dict('records')
+            
+            # Calculate summary statistics
         total_spent = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] < 0)
         total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
         credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
@@ -83,10 +83,10 @@ async def analyze_statement(
         debits = [t['amount'] for t in transactions if t.get('amount', 0) < 0]
         highest_credit = max(credits) if credits else 0
         highest_debit = min(debits) if debits else 0
-
+            
         # Calculate detailed category breakdown
         category_details = {}
-        for t in transactions:
+            for t in transactions:
             if t.get('amount') and t['amount'] < 0:  # Only consider spending
                 category = t.get('category', 'Uncategorized')
                 if category not in category_details:
@@ -114,9 +114,9 @@ async def analyze_statement(
 
         # Sort categories by amount spent
         detailed_category_breakdown.sort(key=lambda x: x['amount'], reverse=True)
-
-        return {
-            "transactions": transactions,
+            
+            return {
+                "transactions": transactions,
             "summary": {
                 "totalReceived": total_received,
                 "totalSpent": total_spent,
@@ -129,8 +129,8 @@ async def analyze_statement(
             },
             "detailedCategoryBreakdown": detailed_category_breakdown,
             "pageCount": page_count,
-        }
-    except Exception as e:
+            }
+        except Exception as e:
         import traceback
         traceback.print_exc()
         # Check if the error is due to a password-protected PDF
@@ -173,7 +173,7 @@ async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form
         return StreamingResponse(file_generator(), media_type="application/pdf", headers={
             "Content-Disposition": f"attachment; filename={os.path.splitext(file.filename)[0]}_unlocked.pdf"
         })
-
+            
     except Exception as e:
         # Clean up files if they exist
         if input_path and os.path.exists(input_path):

@@ -1,5 +1,5 @@
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 
 const inter = Inter({
@@ -11,8 +11,15 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Statement Analyzer',
   description: 'Analyze your bank and UPI statements with ease.',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  themeColor: '#000000',
+}
+
+export function generateViewport(): Viewport {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    themeColor: '#000000',
+  }
 }
 
 export default function RootLayout({

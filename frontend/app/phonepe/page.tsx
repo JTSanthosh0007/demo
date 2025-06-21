@@ -1,7 +1,13 @@
-'use client'
+import type { Viewport } from 'next';
+import { defaultViewport } from '../lib/viewport';
+import PhonePeClientPage from './PhonePeClientPage';
 
-import StatementAnalysis from '../components/StatementAnalysis'
+export function generateViewport(): Viewport {
+  return defaultViewport;
+}
 
-export default function PhonePePage() {
-  return <StatementAnalysis />;
-} 
+const PhonePePage = () => {
+    return <PhonePeClientPage />;
+};
+
+export default PhonePePage; 

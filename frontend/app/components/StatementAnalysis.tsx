@@ -685,7 +685,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
           <p className="text-sm text-zinc-400">
             UPI Statement from {dateRange.start} to {dateRange.end}
           </p>
-        )}
+            )}
         {analysisResults?.pageCount && analysisResults.pageCount > 0 && (
             <p className="text-xs text-zinc-500 mt-1">
                 Based on {analysisResults.pageCount} page(s) in the PDF
@@ -749,7 +749,7 @@ const ResultsView: React.FC<{ analysisResults: AnalysisResult; setCurrentView: (
                     <p className="text-lg font-semibold text-white">Net Balance</p>
                     <p className={`text-2xl font-bold ${summary.balance >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         ₹{summary.balance.toLocaleString('en-IN')}
-                    </p>
+                  </p>
               </div>
             </div>
         </div>
@@ -901,7 +901,7 @@ export const PhonePeAnalysisView: React.FC<{
                 onChange={handleFileSelect}
                     className="hidden"
                     accept=".pdf"
-              />
+                  />
             </label>
             {errorMessage && (
               <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">
@@ -987,7 +987,7 @@ export const KotakAnalysisView: React.FC<{
                 onChange={handleFileSelect} 
                     className="hidden"
                     accept=".pdf"
-              />
+                  />
             </label>
             {errorMessage && (
               <div className="mt-4 p-3 bg-red-500/20 rounded-xl text-center">

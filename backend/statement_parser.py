@@ -73,9 +73,9 @@ class StatementParser:
             # Return page count even if parsing fails
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
 
-    def _parse_phonepe_pdf(self):
+        def _parse_phonepe_pdf(self):
         """Dedicated parser for PhonePe statements with a robust regex."""
-            transactions = []
+        transactions = []
         # A robust regex to capture the main transaction line from the logs
         phonepe_pattern = re.compile(
             r"(?P<date>\w{3} \d{1,2}, \d{4})\s+"  # e.g., Feb 27, 2025
@@ -101,24 +101,24 @@ class StatementParser:
                     data = match.groupdict()
                     description = data['description'].strip()
                     amount_str = data['amount'].replace(',', '')
-                                    amount = float(amount_str)
-                                    
+                    amount = float(amount_str)
+                    
                     # Use the 'type' to determine sign of amount
                     if data['type'] == 'DEBIT':
-                                            amount = -abs(amount)
-                                    else:
+                        amount = -abs(amount)
+                    else:
                         amount = abs(amount)
                     
                     # Date format is like "Feb 27, 2025"
                     date = datetime.strptime(data['date'], '%b %d, %Y')
 
-                                    transactions.append({
-                                        'date': date,
-                                        'amount': amount,
-                                        'description': description,
-                                        'category': self._categorize_transaction(description)
-                                    })
-                                except Exception as e:
+                    transactions.append({
+                        'date': date,
+                        'amount': amount,
+                        'description': description,
+                        'category': self._categorize_transaction(description)
+                    })
+                except Exception as e:
                     logger.warning(f"Could not process a PhonePe transaction match: {match.groups()}. Error: {e}")
 
         except Exception as e:

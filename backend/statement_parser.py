@@ -61,7 +61,7 @@ class StatementParser:
                 final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
                 logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
                 return final_df, page_count
-            else:
+                                    else:
                 logger.error("All parsing methods failed. No transactions could be extracted.")
                 return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
         except Exception as e:
@@ -92,22 +92,22 @@ class StatementParser:
                     data = match.groupdict()
                     description = data['description'].strip()
                     amount_str = data['amount'].replace(',', '')
-                    amount = float(amount_str)
-                    
+                                    amount = float(amount_str)
+                                    
                     if data['type'] == 'DEBIT':
-                        amount = -abs(amount)
-                    else:
+                                            amount = -abs(amount)
+                                    else:
                         amount = abs(amount)
                     
                     date = datetime.strptime(data['date'], '%b %d, %Y')
 
-                    transactions.append({
-                        'date': date,
-                        'amount': amount,
-                        'description': description,
-                        'category': self._categorize_transaction(description)
-                    })
-                except Exception as e:
+                                    transactions.append({
+                                        'date': date,
+                                        'amount': amount,
+                                        'description': description,
+                                        'category': self._categorize_transaction(description)
+                                    })
+                                except Exception as e:
                     logger.warning(f"Could not process a PhonePe transaction match: {match.groups()}. Error: {e}")
 
         except Exception as e:

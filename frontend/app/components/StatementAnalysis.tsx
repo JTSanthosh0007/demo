@@ -1456,8 +1456,9 @@ export default function StatementAnalysis({
   };
 
   const analyzeStatement = async (file: File) => {
-    setErrorMessage(null); // Clear previous errors
+    setErrorMessage(null);
     setAnalysisState('analyzing');
+
     const formData = new FormData();
     formData.append('file', file);
 
@@ -1467,6 +1468,13 @@ export default function StatementAnalysis({
     } else if (currentView === 'kotak-analysis') {
       platform = 'kotak';
     }
+
+    if (!platform) {
+      setErrorMessage('Could not determine the analysis platform. Please go back and try again.');
+      setAnalysisState('upload');
+      return;
+    }
+
     formData.append('platform', platform);
 
     console.log(`Analyzing statement for platform: ${platform}`);
@@ -1474,6 +1482,7 @@ export default function StatementAnalysis({
     try {
       const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
       const endpoint = `${backendUrl}/analyze`;
+      
       console.log(`Sending analysis request to: ${endpoint}`);
       
       const response = await fetch(endpoint, {

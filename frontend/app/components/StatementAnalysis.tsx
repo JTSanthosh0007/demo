@@ -1457,27 +1457,25 @@ export default function StatementAnalysis({
 
   const analyzeStatement = async (file: File) => {
     setErrorMessage(null); // Clear previous errors
-      setAnalysisState('analyzing');
-      const formData = new FormData();
-      formData.append('file', file);
+    setAnalysisState('analyzing');
+    const formData = new FormData();
+    formData.append('file', file);
 
     let platform = '';
     if (currentView === 'phonepe-analysis') {
       platform = 'phonepe';
     } else if (currentView === 'kotak-analysis') {
       platform = 'kotak';
-    } else {
-        // Fallback or default platform
-        platform = 'phonepe'
     }
     formData.append('platform', platform);
+
     console.log(`Analyzing statement for platform: ${platform}`);
 
     try {
       const backendUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
       const endpoint = `${backendUrl}/analyze`;
       console.log(`Sending analysis request to: ${endpoint}`);
-
+      
       const response = await fetch(endpoint, {
         method: 'POST',
         body: formData,

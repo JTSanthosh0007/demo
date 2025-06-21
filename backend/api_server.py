@@ -42,64 +42,44 @@ class FileObject:
     def read(self, *args):
         return self._content
 
-@app.post("/analyze")
-async def analyze_statement(
-    file: UploadFile = File(...),
-    platform: str = Form(...)
-):
+async def _process_analysis(file: UploadFile, platform: str):
+    """Core logic for processing a statement file."""
     try:
-        # Use the correct parser based on the platform, passing the file-like object directly
+        # Use the correct parser based on the platform
         if platform == 'kotak':
-            # The parser now expects the file object and filename
             parser = KotakParser(file.file, file.filename)
         elif platform == 'phonepe':
-            # The parser now expects the file object and filename
             parser = StatementParser(file.file, file.filename)
         else:
             raise HTTPException(status_code=400, detail="Unsupported platform")
 
         df, page_count = parser.parse()
 
-        # Check if DataFrame is empty or None
         if df is None or df.empty:
             return {
-                "transactions": [],
-                "totalSpent": 0,
-                "totalReceived": 0,
-                "detailedCategoryBreakdown": [],
-                "pageCount": 0
+                "summary": {}, "detailedCategoryBreakdown": [], "transactions": [], "pageCount": 0
             }
 
-        # Convert date column to string to avoid JSON serialization issues
         if 'date' in df.columns:
             df['date'] = df['date'].astype(str)
-            
-        # Convert to dictionary format
+        
         transactions = df.to_dict('records')
         
-        # Calculate summary statistics
-        total_spent = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] < 0)
-        total_received = sum(t['amount'] for t in transactions if t.get('amount') and t['amount'] > 0)
-        credit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] > 0)
-        debit_count = sum(1 for t in transactions if t.get('amount') and t['amount'] < 0)
-
-        # Find highest credit and highest debit
+        total_spent = sum(t['amount'] for t in transactions if t.get('amount', 0) < 0)
+        total_received = sum(t['amount'] for t in transactions if t.get('amount', 0) > 0)
+        credit_count = sum(1 for t in transactions if t.get('amount', 0) > 0)
+        debit_count = sum(1 for t in transactions if t.get('amount', 0) < 0)
         credits = [t['amount'] for t in transactions if t.get('amount', 0) > 0]
         debits = [t['amount'] for t in transactions if t.get('amount', 0) < 0]
         highest_credit = max(credits) if credits else 0
         highest_debit = min(debits) if debits else 0
             
-        # Calculate detailed category breakdown
         category_details = {}
         for t in transactions:
-            if t.get('amount') and t['amount'] < 0:  # Only consider spending
+            if t.get('amount', 0) < 0:
                 category = t.get('category', 'Uncategorized')
                 if category not in category_details:
-                    category_details[category] = {
-                        "amount": 0,
-                        "count": 0,
-                        "transactions": []
-                    }
+                    category_details[category] = {"amount": 0, "count": 0, "transactions": []}
                 category_details[category]["amount"] += t['amount']
                 category_details[category]["count"] += 1
                 category_details[category]["transactions"].append(t)
@@ -110,41 +90,33 @@ async def analyze_statement(
                 amount = abs(details['amount'])
                 percentage = (amount / abs(total_spent)) * 100
                 detailed_category_breakdown.append({
-                    "category": category,
-                    "amount": amount,
-                    "count": details['count'],
+                    "category": category, "amount": amount, "count": details['count'],
                     "percentage": round(percentage, 2),
                     "transactions": sorted(details['transactions'], key=lambda x: x['date'], reverse=True)
                 })
-
-        # Sort categories by amount spent
         detailed_category_breakdown.sort(key=lambda x: x['amount'], reverse=True)
             
         return {
             "transactions": transactions,
             "summary": {
-                "totalReceived": total_received,
-                "totalSpent": total_spent,
-                "balance": total_received + total_spent,
-                "creditCount": credit_count,
-                "debitCount": debit_count,
-                "totalTransactions": len(transactions),
-                "highestCredit": highest_credit,
-                "highestDebit": highest_debit,
+                "totalReceived": total_received, "totalSpent": abs(total_spent), "balance": total_received + total_spent,
+                "creditCount": credit_count, "debitCount": debit_count,
+                "totalTransactions": len(transactions), "highestCredit": highest_credit, "highestDebit": highest_debit,
             },
             "detailedCategoryBreakdown": detailed_category_breakdown,
             "pageCount": page_count,
         }
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        # Check if the error is due to a password-protected PDF
         if "permission" in str(e).lower() or "encrypted" in str(e).lower():
-            raise HTTPException(
-                status_code=400, 
-                detail="The provided Kotak PDF statement appears to be password-protected. Please unlock it first using the PDF Unlocker tool."
-            )
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred while parsing the file: {str(e)}")
+            raise HTTPException(status_code=400, detail="The PDF statement appears to be password-protected.")
+        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
+
+@app.post("/analyze")
+async def analyze_statement(
+    file: UploadFile = File(...),
+    platform: str = Form(...)
+):
+    return await _process_analysis(file, platform)
 
 @app.post("/unlock-pdf")
 async def unlock_pdf_endpoint(file: UploadFile = File(...), password: str = Form(...)):

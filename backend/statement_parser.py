@@ -39,20 +39,16 @@ class StatementParser:
         try:
             self.file.seek(0)
             
-            # Use pdfplumber to get page count first
             with pdfplumber.open(self.file) as pdf:
                 page_count = len(pdf.pages)
             
-            # Reset file pointer after reading for page count
             self.file.seek(0)
             
-            # Heuristic to select the right parser based on filename
             if 'phonepe' in self.filename.lower():
                 logger.info("PhonePe statement detected. Using PhonePe-specific parser.")
-                df = self._parse_phonepe_pdf()
+                df, _ = self._parse_phonepe_pdf() # Use the dataframe from the specialized parser
                 return df, page_count
 
-            # Default generic parser
             with pdfplumber.open(self.file) as pdf:
                 transactions = self._parse_pdf_tables(pdf)
                 if not transactions:
@@ -70,31 +66,26 @@ class StatementParser:
                 return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
         except Exception as e:
             logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
-            # Return page count even if parsing fails
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
 
-        def _parse_phonepe_pdf(self):
+    def _parse_phonepe_pdf(self):
         """Dedicated parser for PhonePe statements with a robust regex."""
         transactions = []
-        # A robust regex to capture the main transaction line from the logs
+        page_count = 0
         phonepe_pattern = re.compile(
-            r"(?P<date>\w{3} \d{1,2}, \d{4})\s+"  # e.g., Feb 27, 2025
-            r"(?P<description>.*?)\s+"             # Description (non-greedy)
-            r"(?P<type>DEBIT|CREDIT)\s+"          # Transaction type
-            r"₹(?P<amount>[\d,]+)",               # Amount e.g., 40 or 1,500
+            r"(?P<date>\w{3} \d{1,2}, \d{4})\s+"
+            r"(?P<description>.*?)\s+"
+            r"(?P<type>DEBIT|CREDIT)\s+"
+            r"₹(?P<amount>[\d,]+)",
             re.MULTILINE
         )
 
         try:
-            self.file.seek(0) # Reset file pointer
+            self.file.seek(0)
             with pdfplumber.open(self.file) as pdf:
+                page_count = len(pdf.pages)
                 full_text = "".join(page.extract_text() or "" for page in pdf.pages)
-                
-                # Logging for debugging
-                logger.info("--- Extracted PhonePe PDF Text (for new regex) ---")
-                logger.info(full_text)
-                logger.info("------------------------------------")
-
+            
             matches = phonepe_pattern.finditer(full_text)
             for match in matches:
                 try:
@@ -103,13 +94,11 @@ class StatementParser:
                     amount_str = data['amount'].replace(',', '')
                     amount = float(amount_str)
                     
-                    # Use the 'type' to determine sign of amount
                     if data['type'] == 'DEBIT':
                         amount = -abs(amount)
                     else:
                         amount = abs(amount)
                     
-                    # Date format is like "Feb 27, 2025"
                     date = datetime.strptime(data['date'], '%b %d, %Y')
 
                     transactions.append({
@@ -123,27 +112,25 @@ class StatementParser:
 
         except Exception as e:
             logger.error(f"Error during PhonePe parsing: {e}", exc_info=True)
-            return pd.DataFrame()
+            return pd.DataFrame(), 0
 
         if not transactions:
             logger.warning("No transactions found using the new PhonePe regex pattern.")
-            return pd.DataFrame()
+            return pd.DataFrame(), page_count
 
         logger.info(f"Successfully parsed {len(transactions)} transactions from PhonePe statement.")
-        return pd.DataFrame(transactions).sort_values('date').reset_index(drop=True)
+        return pd.DataFrame(transactions).sort_values('date').reset_index(drop=True), page_count
 
     def _parse_pdf_tables(self, pdf):
         """Primary parsing method: Extracts data from structured tables."""
         transactions = []
         try:
             for i, page in enumerate(pdf.pages):
-                logger.info(f"TABLE PARSE: Processing page {i + 1}/{len(pdf.pages)}")
-                
                 tables = page.extract_tables()
                 if not tables:
                     continue
 
-                for table_num, table in enumerate(tables):
+                for table in tables:
                     if not table:
                         continue
 
@@ -249,17 +236,15 @@ class StatementParser:
             if not date_str:
                 return datetime.now()
 
-            # Remove any extra whitespace and clean up
             date_str = date_str.strip()
             
-            # Define multiple formats to try
             formats_to_try = [
-                '%d %b %Y',          # 01 Jan 2024
-                '%d-%m-%Y',          # 01-01-2024
-                '%d/%m/%Y',          # 01/01/2024
-                '%b %d, %Y',         # Jan 01, 2024
-                '%Y-%m-%d',          # 2024-01-01
-                '%d %B %Y',          # 01 January 2024
+                '%d %b %Y',
+                '%d-%m-%Y',
+                '%d/%m/%Y',
+                '%b %d, %Y',
+                '%Y-%m-%d',
+                '%d %B %Y',
             ]
             
             for fmt in formats_to_try:
@@ -268,7 +253,6 @@ class StatementParser:
                 except ValueError:
                     continue
             
-            # If all formats fail, log a warning and return a default
             logger.warning(f"Could not parse date string: {date_str}. Using current date as fallback.")
             return datetime.now()
         except Exception as e:
@@ -279,7 +263,6 @@ class StatementParser:
         """Categorize transaction based on description keywords."""
         description = description.lower()
         
-        # Define keywords for each category
         categories = {
             'Food': ['zomato', 'swiggy', 'restaurant', 'cafe', 'food', 'eat', 'grocery'],
             'Shopping': ['amazon', 'flipkart', 'myntra', 'shopping', 'mart', 'store'],
@@ -300,7 +283,6 @@ class StatementParser:
 def main():
     """Command-line interface for parsing a statement."""
     
-    # Setup argument parser
     parser = argparse.ArgumentParser(description='Parse a bank or UPI statement and output to JSON.')
     parser.add_argument('input_file', help='The path to the PDF statement file.')
     parser.add_argument('-o', '--output_file', default='transactions.json', help='The path to the output JSON file.')
@@ -314,25 +296,16 @@ def main():
         sys.exit(1)
 
     try:
-        # Open the file in binary read mode
         with open(input_path, 'rb') as f:
-            # Re-wrap in an io.BytesIO buffer for consistency with API
             file_buffer = io.BytesIO(f.read())
-            
-            # Create a parser instance
             statement_parser = StatementParser(file_buffer, input_path.name)
-            
-            # Parse the file
             df, page_count = statement_parser.parse()
         
         if df.empty:
             print("No transactions were extracted.")
             sys.exit(0)
             
-        # Convert date to string for JSON serialization
         df['date'] = df['date'].dt.strftime('%Y-%m-%d')
-        
-        # Save to JSON
         df.to_json(output_path, orient='records', indent=4)
         
         print(f"Successfully parsed {len(df)} transactions and saved to {output_path}")

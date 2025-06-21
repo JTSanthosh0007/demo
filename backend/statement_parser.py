@@ -44,11 +44,14 @@ class StatementParser:
             
             self.file.seek(0)
             
-            if 'phonepe' in self.filename.lower():
+            # Use bank-specific parsers if applicable
+            filename_lower = self.filename.lower()
+            if 'phonepe' in filename_lower:
                 logger.info("PhonePe statement detected. Using PhonePe-specific parser.")
                 df, _ = self._parse_phonepe_pdf() # Use the dataframe from the specialized parser
                 return df, page_count
-
+            
+            # Default to generic table/text parsing
             with pdfplumber.open(self.file) as pdf:
                 transactions = self._parse_pdf_tables(pdf)
                 if not transactions:
@@ -57,13 +60,15 @@ class StatementParser:
 
             if transactions:
                 final_df = pd.DataFrame(transactions)
+                # Additional cleaning to remove non-transactional rows
                 final_df = final_df[~final_df['description'].str.contains('balance', case=False, na=False)]
                 final_df = final_df.drop_duplicates().sort_values('date').reset_index(drop=True)
                 logger.info(f"Successfully parsed {len(final_df)} transactions in total.")
                 return final_df, page_count
-                                    else:
+            else:
                 logger.error("All parsing methods failed. No transactions could be extracted.")
                 return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
+                
         except Exception as e:
             logger.error(f"A critical error occurred during PDF parsing: {e}", exc_info=True)
             return pd.DataFrame(columns=['date', 'amount', 'description', 'category']), page_count
@@ -92,22 +97,22 @@ class StatementParser:
                     data = match.groupdict()
                     description = data['description'].strip()
                     amount_str = data['amount'].replace(',', '')
-                                    amount = float(amount_str)
-                                    
+                    amount = float(amount_str)
+                    
                     if data['type'] == 'DEBIT':
-                                            amount = -abs(amount)
-                                    else:
+                        amount = -abs(amount)
+                    else:
                         amount = abs(amount)
                     
                     date = datetime.strptime(data['date'], '%b %d, %Y')
 
-                                    transactions.append({
-                                        'date': date,
-                                        'amount': amount,
-                                        'description': description,
-                                        'category': self._categorize_transaction(description)
-                                    })
-                                except Exception as e:
+                    transactions.append({
+                        'date': date,
+                        'amount': amount,
+                        'description': description,
+                        'category': self._categorize_transaction(description)
+                    })
+                except Exception as e:
                     logger.warning(f"Could not process a PhonePe transaction match: {match.groups()}. Error: {e}")
 
         except Exception as e:
